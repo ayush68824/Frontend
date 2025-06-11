@@ -34,4 +34,12 @@ export interface TaskState {
     search: string;
   };
   sortBy: string;
+}
+
+export interface TaskFormData {
+  title: string;
+  description: string;
+  status: 'pending' | 'in-progress' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+  dueDate: string;
 } 
