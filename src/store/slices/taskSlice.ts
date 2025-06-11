@@ -1,26 +1,28 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { Task, TaskFormData } from '../../types';
-
-interface TaskState {
-  items: Task[];
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
-  error: string | null;
-}
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { Task, TaskFormData, TaskState } from '../../types';
 
 const initialState: TaskState = {
   items: [],
   status: 'idle',
-  error: null
+  error: null,
+  filters: {
+    status: 'all',
+    priority: 'all'
+  },
+  sortBy: 'dueDate'
 };
 
-export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
-  // In a real app, this would be an API call
-  return [] as Task[];
-});
+export const fetchTasks = createAsyncThunk<Task[]>(
+  'tasks/fetchTasks',
+  async () => {
+    // In a real app, this would be an API call
+    return [] as Task[];
+  }
+);
 
-export const createTask = createAsyncThunk(
+export const createTask = createAsyncThunk<Task, TaskFormData>(
   'tasks/createTask',
-  async (taskData: TaskFormData) => {
+  async (taskData) => {
     // In a real app, this would be an API call
     const newTask: Task = {
       id: Date.now().toString(),
@@ -33,9 +35,9 @@ export const createTask = createAsyncThunk(
   }
 );
 
-export const updateTask = createAsyncThunk(
+export const updateTask = createAsyncThunk<Task, Task>(
   'tasks/updateTask',
-  async (task: Task) => {
+  async (task) => {
     // In a real app, this would be an API call
     return {
       ...task,
@@ -44,9 +46,9 @@ export const updateTask = createAsyncThunk(
   }
 );
 
-export const deleteTask = createAsyncThunk(
+export const deleteTask = createAsyncThunk<string, string>(
   'tasks/deleteTask',
-  async (taskId: string) => {
+  async (taskId) => {
     // In a real app, this would be an API call
     return taskId;
   }
@@ -55,7 +57,14 @@ export const deleteTask = createAsyncThunk(
 const taskSlice = createSlice({
   name: 'tasks',
   initialState,
-  reducers: {},
+  reducers: {
+    setFilter: (state, action: PayloadAction<Partial<TaskState['filters']>>) => {
+      state.filters = { ...state.filters, ...action.payload };
+    },
+    setSortBy: (state, action: PayloadAction<string>) => {
+      state.sortBy = action.payload;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchTasks.pending, (state) => {
@@ -84,4 +93,5 @@ const taskSlice = createSlice({
   }
 });
 
+export const { setFilter, setSortBy } = taskSlice.actions;
 export default taskSlice.reducer; 

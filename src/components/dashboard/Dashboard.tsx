@@ -20,14 +20,17 @@ import {
   DialogContent,
   DialogActions,
   Chip,
+  SelectChangeEvent
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
+  Schedule as ScheduleIcon,
+  Sort as SortIcon
 } from '@mui/icons-material';
-import { RootState } from '../../store';
+import { RootState, AppDispatch } from '../../store';
 import {
   setTasks,
   addTask,
@@ -35,17 +38,18 @@ import {
   deleteTask,
   setFilter,
   setSortBy,
+  fetchTasks,
 } from '../../store/taskSlice';
 import { tasksAPI } from '../../services/api';
 import toast from 'react-hot-toast';
-import { Task } from '../../types';
+import { Task, TaskFormData } from '../../types';
 
 const Dashboard: React.FC = () => {
-  const dispatch = useDispatch();
-  const { tasks, filters, sortBy } = useSelector((state: RootState) => state.tasks);
+  const dispatch = useDispatch<AppDispatch>();
+  const { items: tasks, status, filters, sortBy } = useSelector((state: RootState) => state.tasks);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TaskFormData>({
     title: '',
     description: '',
     status: 'pending',
@@ -54,17 +58,8 @@ const Dashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  const fetchTasks = async () => {
-    try {
-      const response = await tasksAPI.getTasks();
-      dispatch(setTasks(response));
-    } catch (error) {
-      toast.error('Failed to fetch tasks');
-    }
-  };
+    dispatch(fetchTasks());
+  }, [dispatch]);
 
   const handleOpenDialog = (task?: Task) => {
     if (task) {
@@ -94,21 +89,31 @@ const Dashboard: React.FC = () => {
     setEditingTask(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (editingTask) {
-        const updatedTask = await tasksAPI.updateTask(editingTask.id, formData);
-        dispatch(updateTask(updatedTask));
+        await dispatch(updateTask({ ...editingTask, ...formData })).unwrap();
         toast.success('Task updated successfully');
       } else {
-        const newTask = await tasksAPI.createTask(formData);
-        dispatch(addTask(newTask));
+        await dispatch(addTask(formData)).unwrap();
         toast.success('Task created successfully');
       }
       handleCloseDialog();
     } catch (error) {
       toast.error('Failed to save task');
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent
+  ) => {
+    const { name, value } = e.target;
+    if (name) {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
 
@@ -133,6 +138,14 @@ const Dashboard: React.FC = () => {
     } catch (error) {
       toast.error('Failed to update task status');
     }
+  };
+
+  const handleFilterChange = (e: SelectChangeEvent) => {
+    dispatch(setFilter({ [e.target.name]: e.target.value }));
+  };
+
+  const handleSortChange = (e: SelectChangeEvent) => {
+    dispatch(setSortBy(e.target.value));
   };
 
   const filteredTasks = tasks
@@ -189,12 +202,27 @@ const Dashboard: React.FC = () => {
             <Select
               value={filters.status}
               label="Status"
-              onChange={(e) => dispatch(setFilter({ key: 'status', value: e.target.value }))}
+              onChange={handleFilterChange}
             >
-              <MenuItem value="">All</MenuItem>
+              <MenuItem value="all">All</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
               <MenuItem value="in-progress">In Progress</MenuItem>
               <MenuItem value="completed">Completed</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <FormControl fullWidth>
+            <InputLabel>Priority</InputLabel>
+            <Select
+              value={filters.priority}
+              label="Priority"
+              onChange={handleFilterChange}
+            >
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="high">High</MenuItem>
+              <MenuItem value="medium">Medium</MenuItem>
+              <MenuItem value="low">Low</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -204,10 +232,11 @@ const Dashboard: React.FC = () => {
             <Select
               value={sortBy}
               label="Sort By"
-              onChange={(e) => dispatch(setSortBy(e.target.value))}
+              onChange={handleSortChange}
             >
               <MenuItem value="dueDate">Due Date</MenuItem>
               <MenuItem value="priority">Priority</MenuItem>
+              <MenuItem value="status">Status</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -267,16 +296,18 @@ const Dashboard: React.FC = () => {
             <TextField
               fullWidth
               label="Title"
+              name="title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={handleInputChange}
               margin="normal"
               required
             />
             <TextField
               fullWidth
               label="Description"
+              name="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={handleInputChange}
               margin="normal"
               multiline
               rows={3}
@@ -284,9 +315,10 @@ const Dashboard: React.FC = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Status</InputLabel>
               <Select
+                name="status"
                 value={formData.status}
                 label="Status"
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                onChange={handleInputChange}
               >
                 <MenuItem value="pending">Pending</MenuItem>
                 <MenuItem value="in-progress">In Progress</MenuItem>
@@ -296,9 +328,10 @@ const Dashboard: React.FC = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Priority</InputLabel>
               <Select
+                name="priority"
                 value={formData.priority}
                 label="Priority"
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                onChange={handleInputChange}
               >
                 <MenuItem value="low">Low</MenuItem>
                 <MenuItem value="medium">Medium</MenuItem>
@@ -308,9 +341,10 @@ const Dashboard: React.FC = () => {
             <TextField
               fullWidth
               label="Due Date"
+              name="dueDate"
               type="date"
               value={formData.dueDate}
-              onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+              onChange={handleInputChange}
               margin="normal"
               InputLabelProps={{ shrink: true }}
               required

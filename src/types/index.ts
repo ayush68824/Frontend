@@ -8,9 +8,9 @@ export interface Task {
   id: string;
   title: string;
   description: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
   dueDate: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'in-progress' | 'completed';
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -18,20 +18,17 @@ export interface Task {
 
 export interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
+  token: string | null;
 }
 
 export interface TaskState {
-  tasks: Task[];
-  loading: boolean;
+  items: Task[];
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
   filters: {
     status: string;
     priority: string;
-    search: string;
   };
   sortBy: string;
 }
@@ -39,7 +36,7 @@ export interface TaskState {
 export interface TaskFormData {
   title: string;
   description: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
   dueDate: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'in-progress' | 'completed';
 } 
