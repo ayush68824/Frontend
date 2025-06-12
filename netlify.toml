@@ -3,7 +3,7 @@
   publish = "dist"
 
 [build.environment]
-  VITE_API_URL = "https://your-backend-url.com/api"
+  VITE_API_URL = "https://todo-full-stack-1-9ewe.onrender.com/api"
 
 [[redirects]]
   from = "/*"
