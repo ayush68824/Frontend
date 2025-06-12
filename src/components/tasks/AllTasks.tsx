@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import Navbar from '../layout/Navbar';
+import MainLayout from '../layout/MainLayout';
 import TaskItem from './TaskItem';
 import { Doughnut } from 'react-chartjs-2';
 import {
@@ -52,55 +52,47 @@ const AllTasks: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-64 hidden md:block bg-white border-r">
-        <Navbar />
-      </div>
-      {/* Main Content */}
-      <div className="flex-1 p-6 md:p-10">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">All Tasks</h1>
-            <p className="text-gray-500">Overview of all your tasks and their status</p>
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <select
-              value={filter}
-              onChange={e => setFilter(e.target.value as typeof filter)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All</option>
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
+    <MainLayout>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">All Tasks</h1>
+          <p className="text-gray-500">Overview of all your tasks and their status</p>
         </div>
-        {/* Chart */}
-        <div className="max-w-xs mx-auto mb-10">
-          <Doughnut data={chartData} />
-        </div>
-        {/* Task List */}
-        <div className="space-y-4">
-          {filteredTasks.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              No tasks found. Create a new task to get started!
-            </div>
-          ) : (
-            filteredTasks.map(task => <TaskItem key={task.id} task={task} />)
-          )}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <select
+            value={filter}
+            onChange={e => setFilter(e.target.value as typeof filter)}
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
         </div>
       </div>
-    </div>
+      {/* Chart */}
+      <div className="max-w-xs mx-auto mb-10">
+        <Doughnut data={chartData} />
+      </div>
+      {/* Task List */}
+      <div className="space-y-4">
+        {filteredTasks.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            No tasks found. Create a new task to get started!
+          </div>
+        ) : (
+          filteredTasks.map(task => <TaskItem key={task.id} task={task} />)
+        )}
+      </div>
+    </MainLayout>
   );
 };
 
