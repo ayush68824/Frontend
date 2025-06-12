@@ -15,8 +15,8 @@ import {
 import { TaskFormData } from '../../types';
 import { tasksAPI } from '../../services/api';
 import { useDispatch } from 'react-redux';
-import { addTask } from '../../store/taskSlice';
-import { toast } from 'react-hot-toast';
+import { addTask } from '../../store/slices/taskSlice';
+import { toast } from 'react-toastify';
 
 interface TaskFormProps {
   open: boolean;
