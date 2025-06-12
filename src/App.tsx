@@ -1,41 +1,39 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import Dashboard from './components/dashboard/Dashboard';
 import { useSelector } from 'react-redux';
-import { RootState } from './store';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import LoginForm from './components/auth/LoginForm';
+import RegisterForm from './components/auth/RegisterForm';
+import TaskList from './components/tasks/TaskList';
+import Navbar from './components/layout/Navbar';
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useSelector((state: any) => state.auth);
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
 
-const App: React.FC = () => {
-  const isAuthenticated = useSelector((state: RootState) => state.auth?.isAuthenticated);
-
+const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Toaster position="top-right" />
-      <Router>
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <ToastContainer position="top-right" autoClose={3000} />
+        <Navbar />
         <Routes>
-          <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
-          <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} />
-          <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
-          <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <TaskList />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
-      </Router>
-    </ThemeProvider>
+      </div>
+    </Router>
   );
 };
 
