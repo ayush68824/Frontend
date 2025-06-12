@@ -4,6 +4,8 @@ import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import Dashboard from './components/dashboard/Dashboard';
 import AllTasks from './components/tasks/AllTasks';
+import Settings from './components/dashboard/Settings';
+import TaskCategories from './components/tasks/TaskCategories';
 import { RootState } from './types';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -48,6 +50,22 @@ function App() {
         element={
           <PrivateRoute>
             <AllTasks />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <PrivateRoute>
+            <Settings />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/categories"
+        element={
+          <PrivateRoute>
+            <TaskCategories />
           </PrivateRoute>
         }
       />
