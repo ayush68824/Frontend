@@ -14,7 +14,7 @@ const Settings: React.FC = () => {
     email: user?.email || '',
     avatar: user?.avatar || '',
   });
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || '');
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +38,17 @@ const Settings: React.FC = () => {
       // Placeholder: updateProfile should be implemented in the API
       // const updated = await updateProfile(formData, token);
       // dispatch(setCredentials({ user: updated, token }));
-      dispatch(setCredentials({ user: { ...user, ...formData }, token: token! }));
+      dispatch(setCredentials({
+        user: {
+          id: user?.id || '',
+          name: formData.name,
+          email: formData.email,
+          avatar: formData.avatar,
+          createdAt: user?.createdAt || '',
+          updatedAt: user?.updatedAt || '',
+        },
+        token: token!
+      }));
       toast.success('Profile updated!');
     } catch (error) {
       toast.error('Failed to update profile');
