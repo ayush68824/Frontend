@@ -3,11 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
-import { UserIcon, ClipboardListIcon, TagIcon, Cog6ToothIcon, QuestionMarkCircleIcon, ArrowLeftOnRectangleIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentListIcon, TagIcon, Cog6ToothIcon, QuestionMarkCircleIcon, ArrowLeftOnRectangleIcon, HomeIcon } from '@heroicons/react/24/outline';
 
 const navLinks = [
   { name: 'Dashboard', to: '/dashboard', icon: <HomeIcon className="h-6 w-6" /> },
-  { name: 'My Task', to: '/all-tasks', icon: <ClipboardListIcon className="h-6 w-6" /> },
+  { name: 'My Task', to: '/all-tasks', icon: <ClipboardDocumentListIcon className="h-6 w-6" /> },
   { name: 'Task Categories', to: '/categories', icon: <TagIcon className="h-6 w-6" /> },
   { name: 'Settings', to: '/settings', icon: <Cog6ToothIcon className="h-6 w-6" /> },
   { name: 'Help', to: '/help', icon: <QuestionMarkCircleIcon className="h-6 w-6" /> },
