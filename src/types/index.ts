@@ -1,39 +1,37 @@
 export interface User {
   id: string;
-  email: string;
   name: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Task {
   id: string;
+  userId: string;
   title: string;
   description: string;
-  dueDate: string;
-  priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'in-progress' | 'completed';
-  userId: string;
+  priority: 'low' | 'medium' | 'high';
+  dueDate: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AuthState {
   user: User | null;
-  isAuthenticated: boolean;
   token: string | null;
+}
+
+export interface TaskState {
+  tasks: Task[];
   loading: boolean;
   error: string | null;
 }
 
-export interface TaskState {
-  items: Task[];
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
-  error: string | null;
-  filters: {
-    status: string;
-    priority: string;
-    search: string;
-  };
-  sortBy: string;
+export interface RootState {
+  auth: AuthState;
+  tasks: TaskState;
 }
 
 export interface TaskFormData {

@@ -2,15 +2,9 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Task, TaskState } from '../../types';
 
 const initialState: TaskState = {
-  items: [],
-  status: 'idle',
+  tasks: [],
+  loading: false,
   error: null,
-  filters: {
-    status: '',
-    priority: '',
-    search: '',
-  },
-  sortBy: 'dueDate',
 };
 
 const taskSlice = createSlice({
@@ -18,34 +12,28 @@ const taskSlice = createSlice({
   initialState,
   reducers: {
     setTasks: (state, action: PayloadAction<Task[]>) => {
-      state.items = action.payload;
-      state.status = 'succeeded';
+      state.tasks = action.payload;
+      state.loading = false;
       state.error = null;
     },
     addTask: (state, action: PayloadAction<Task>) => {
-      state.items.push(action.payload);
+      state.tasks.push(action.payload);
     },
     updateTask: (state, action: PayloadAction<Task>) => {
-      const index = state.items.findIndex((task) => task.id === action.payload.id);
+      const index = state.tasks.findIndex((task) => task.id === action.payload.id);
       if (index !== -1) {
-        state.items[index] = action.payload;
+        state.tasks[index] = action.payload;
       }
     },
     deleteTask: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter((task) => task.id !== action.payload);
+      state.tasks = state.tasks.filter((task) => task.id !== action.payload);
     },
-    setStatus: (state, action: PayloadAction<'idle' | 'loading' | 'succeeded' | 'failed'>) => {
-      state.status = action.payload;
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
-      state.status = 'failed';
-    },
-    setFilters: (state, action: PayloadAction<{ status?: string; priority?: string; search?: string }>) => {
-      state.filters = { ...state.filters, ...action.payload };
-    },
-    setSortBy: (state, action: PayloadAction<string>) => {
-      state.sortBy = action.payload;
+      state.loading = false;
     },
   },
 });
@@ -55,10 +43,8 @@ export const {
   addTask,
   updateTask,
   deleteTask,
-  setStatus,
+  setLoading,
   setError,
-  setFilters,
-  setSortBy,
 } = taskSlice.actions;
 
 export default taskSlice.reducer; 

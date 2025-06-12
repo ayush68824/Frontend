@@ -1,36 +1,40 @@
-import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.removeItem('token');
+    toast.success('Logged out successfully');
     navigate('/login');
   };
 
   return (
-    <nav className="bg-white shadow">
+    <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-xl font-bold text-indigo-600">
-                Task Manager
-              </Link>
-            </div>
+            <Link to="/" className="flex items-center">
+              <span className="text-xl font-bold text-indigo-600">TaskMaster</span>
+            </Link>
           </div>
 
           <div className="flex items-center">
-            {isAuthenticated ? (
+            {user ? (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-700">Welcome, {user?.name}</span>
+                <span className="text-sm text-gray-700">
+                  Welcome, {user.name}
+                </span>
                 <button
                   onClick={handleLogout}
-                  className="text-gray-600 hover:text-gray-900"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
                 >
                   Logout
                 </button>
@@ -39,15 +43,15 @@ const Navbar = () => {
               <div className="flex items-center space-x-4">
                 <Link
                   to="/login"
-                  className="text-gray-600 hover:text-gray-900"
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900"
                 >
-                  Login
+                  Sign in
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
                 >
-                  Register
+                  Sign up
                 </Link>
               </div>
             )}
