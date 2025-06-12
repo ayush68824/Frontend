@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { Task, User } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://todo-full-stack-1-9ewe.onrender.com/api';
+console.log('API URL being used:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL,
@@ -29,12 +30,17 @@ export const authAPI = {
     return response.data;
   },
   register: async (name: string, email: string, password: string) => {
-    const response = await api.post<{ user: User; token: string }>('/auth/register', {
-      name,
-      email,
-      password,
-    });
-    return response.data;
+    try {
+      const response = await api.post<{ user: User; token: string }>('/auth/register', {
+        name,
+        email,
+        password,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
   },
 };
 
