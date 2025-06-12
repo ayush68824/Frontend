@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
-import taskReducer from './slices/taskSlice';
-import authReducer from './slices/authSlice';
+import authReducer from './authSlice';
+import taskReducer from './taskSlice';
 
 export const store = configureStore({
   reducer: {
+    auth: authReducer,
     tasks: taskReducer,
-    auth: authReducer
-  }
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

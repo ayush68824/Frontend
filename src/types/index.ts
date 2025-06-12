@@ -20,6 +20,8 @@ export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   token: string | null;
+  loading: boolean;
+  error: string | null;
 }
 
 export interface TaskState {
@@ -29,6 +31,7 @@ export interface TaskState {
   filters: {
     status: string;
     priority: string;
+    search: string;
   };
   sortBy: string;
 }
