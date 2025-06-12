@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { Task, User } from '../types';
+import { store } from '../store';
+import { logout } from '../store/slices/authSlice';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://todo-full-stack-1-9ewe.onrender.com/api';
 console.log('API URL being used:', API_URL);
@@ -19,6 +21,18 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Handle 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      store.dispatch(logout());
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Auth API calls
 export const authAPI = {
