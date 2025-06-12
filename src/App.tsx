@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import Dashboard from './components/dashboard/Dashboard';
+import AllTasks from './components/tasks/AllTasks';
 import { RootState } from './types';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -39,6 +40,14 @@ function App() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/all-tasks"
+        element={
+          <PrivateRoute>
+            <AllTasks />
           </PrivateRoute>
         }
       />
