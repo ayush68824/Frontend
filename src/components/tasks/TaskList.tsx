@@ -1,55 +1,33 @@
-import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Task } from '../../types';
+import { fetchTasks } from '../../store/slices/taskSlice';
+import { AppDispatch, RootState } from '../../store';
 import TaskItem from './TaskItem';
 import TaskForm from './TaskForm';
-import { tasksAPI } from '../../services/api';
-import { setTasks, setLoading, setError } from '../../store/slices/taskSlice';
-import { RootState } from '../../types';
 
-const TaskList = () => {
-  const dispatch = useDispatch();
+const TaskList: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const { tasks, loading, error } = useSelector((state: RootState) => state.tasks);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState<'all' | Task['status']>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      dispatch(setLoading(true));
-      try {
-        const fetchedTasks = await tasksAPI.getTasks();
-        dispatch(setTasks(fetchedTasks));
-      } catch (error) {
-        dispatch(setError('Failed to fetch tasks'));
-        toast.error('Failed to fetch tasks');
-        console.error('Fetch tasks error:', error);
-      } finally {
-        dispatch(setLoading(false));
-      }
-    };
-
-    fetchTasks();
+    dispatch(fetchTasks());
   }, [dispatch]);
 
-  const filteredTasks = tasks.filter((task) => {
-    const matchesFilter =
-      filter === 'all' ||
-      (filter === 'completed' && task.status === 'completed') ||
-      (filter === 'pending' && task.status === 'pending') ||
-      (filter === 'in-progress' && task.status === 'in-progress');
-
-    const matchesSearch =
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredTasks = tasks.filter(task => {
+    const matchesFilter = filter === 'all' || task.status === filter;
+    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description.toLowerCase().includes(searchQuery.toLowerCase());
-
     return matchesFilter && matchesSearch;
   });
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
@@ -57,66 +35,62 @@ const TaskList = () => {
   if (error) {
     return (
       <div className="text-center text-red-600 p-4">
-        <p>{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-        >
-          Retry
-        </button>
+        Error: {error}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Tasks</h1>
-        <button
-          onClick={() => setShowTaskForm(true)}
-          className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-        >
-          Add New Task
-        </button>
-      </div>
-
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex-1 w-full sm:w-auto">
           <input
             type="text"
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="w-full sm:w-48">
+        <div className="flex gap-2">
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            onChange={(e) => setFilter(e.target.value as typeof filter)}
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Tasks</option>
             <option value="pending">Pending</option>
             <option value="in-progress">In Progress</option>
             <option value="completed">Completed</option>
           </select>
+          <button
+            onClick={() => setShowTaskForm(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Add Task
+          </button>
         </div>
       </div>
 
-      {filteredTasks.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No tasks found</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {filteredTasks.map((task) => (
-            <TaskItem key={task.id} task={task} />
-          ))}
+      {showTaskForm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <TaskForm onClose={() => setShowTaskForm(false)} />
+          </div>
         </div>
       )}
 
-      {showTaskForm && <TaskForm onClose={() => setShowTaskForm(false)} />}
+      <div className="space-y-4">
+        {filteredTasks.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            No tasks found. Create a new task to get started!
+          </div>
+        ) : (
+          filteredTasks.map((task) => (
+            <TaskItem key={task.id} task={task} />
+          ))
+        )}
+      </div>
     </div>
   );
 };

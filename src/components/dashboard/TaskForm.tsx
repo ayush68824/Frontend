@@ -14,8 +14,6 @@ import {
 } from '@mui/material';
 import { TaskFormData } from '../../types';
 import { tasksAPI } from '../../services/api';
-import { useDispatch } from 'react-redux';
-import { addTask } from '../../store/slices/taskSlice';
 import { toast } from 'react-toastify';
 
 interface TaskFormProps {
@@ -24,7 +22,6 @@ interface TaskFormProps {
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ open, onClose }) => {
-  const dispatch = useDispatch();
   const [formData, setFormData] = useState<TaskFormData>({
     title: '',
     description: '',
@@ -53,7 +50,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ open, onClose }) => {
     e.preventDefault();
     try {
       const newTask = await tasksAPI.createTask(formData);
-      dispatch(addTask(newTask));
       toast.success('Task created successfully!');
       onClose();
       setFormData({

@@ -1,14 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import taskReducer from './slices/taskSlice';
-import { RootState } from '../types';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     tasks: taskReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
-export type AppDispatch = typeof store.dispatch;
-export type AppState = RootState; 
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch; 
