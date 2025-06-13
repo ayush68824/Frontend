@@ -16,40 +16,60 @@ const initialState: TaskState = {
 
 export const fetchTasks = createAsyncThunk(
   'tasks/fetchTasks',
-  async () => {
-    const response = await tasksAPI.getTasks();
-    return response;
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await tasksAPI.getTasks();
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch tasks');
+    }
   }
 );
 
 export const createTask = createAsyncThunk(
   'tasks/createTask',
-  async (taskData: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
-    const response = await tasksAPI.createTask(taskData);
-    return response;
+  async (taskData: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
+    try {
+      const response = await tasksAPI.createTask(taskData);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create task');
+    }
   }
 );
 
 export const updateTask = createAsyncThunk(
   'tasks/updateTask',
-  async ({ id, ...taskData }: Partial<Task> & { id: string }) => {
-    const response = await tasksAPI.updateTask(id, taskData);
-    return response;
+  async ({ id, ...taskData }: Partial<Task> & { id: string }, { rejectWithValue }) => {
+    try {
+      const response = await tasksAPI.updateTask(id, taskData);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update task');
+    }
   }
 );
 
 export const deleteTask = createAsyncThunk(
   'tasks/deleteTask',
-  async (id: string) => {
-    await tasksAPI.deleteTask(id);
-    return id;
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await tasksAPI.deleteTask(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete task');
+    }
   }
 );
 
 const taskSlice = createSlice({
   name: 'tasks',
   initialState,
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Fetch tasks
@@ -63,7 +83,7 @@ const taskSlice = createSlice({
       })
       .addCase(fetchTasks.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch tasks';
+        state.error = action.payload as string;
       })
       // Create task
       .addCase(createTask.pending, (state) => {
@@ -76,7 +96,7 @@ const taskSlice = createSlice({
       })
       .addCase(createTask.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to create task';
+        state.error = action.payload as string;
       })
       // Update task
       .addCase(updateTask.pending, (state) => {
@@ -92,7 +112,7 @@ const taskSlice = createSlice({
       })
       .addCase(updateTask.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to update task';
+        state.error = action.payload as string;
       })
       // Delete task
       .addCase(deleteTask.pending, (state) => {
@@ -105,9 +125,10 @@ const taskSlice = createSlice({
       })
       .addCase(deleteTask.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to delete task';
+        state.error = action.payload as string;
       });
   },
 });
 
+export const { clearError } = taskSlice.actions;
 export default taskSlice.reducer; 

@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import MainLayout from '../layout/MainLayout';
 import { toast } from 'react-toastify';
-// import { updateProfile } from '../../services/api'; // To be implemented
+import { authAPI } from '../../services/api';
 import { setCredentials } from '../../store/slices/authSlice';
 
 const Settings: React.FC = () => {
@@ -35,22 +35,15 @@ const Settings: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Placeholder: updateProfile should be implemented in the API
-      // const updated = await updateProfile(formData, token);
-      // dispatch(setCredentials({ user: updated, token }));
-      dispatch(setCredentials({
-        user: {
-          id: user?.id || '',
-          name: formData.name,
-          email: formData.email,
-          avatar: formData.avatar,
-          createdAt: user?.createdAt || '',
-          updatedAt: user?.updatedAt || '',
-        },
-        token: token!
-      }));
-      toast.success('Profile updated!');
+      const { user: updatedUser } = await authAPI.updateProfile({
+        name: formData.name,
+        email: formData.email,
+        avatar: formData.avatar,
+      });
+      dispatch(setCredentials({ user: updatedUser, token: token! }));
+      toast.success('Profile updated successfully!');
     } catch (error) {
+      console.error('Profile update error:', error);
       toast.error('Failed to update profile');
     } finally {
       setLoading(false);

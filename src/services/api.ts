@@ -57,6 +57,10 @@ export const authAPI = {
       throw error;
     }
   },
+  updateProfile: async (userData: Partial<User>) => {
+    const response = await api.put<{ user: User }>('/auth/profile', userData);
+    return response.data;
+  },
 };
 
 // Tasks API calls
