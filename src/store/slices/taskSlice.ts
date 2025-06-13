@@ -1,17 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { taskAPI } from '../../services/api';
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  dueDate: string;
-  status: 'pending' | 'completed';
-  priority: 'low' | 'medium' | 'high';
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { RootState } from '../store';
+import { Task } from '../../types';
 
 interface TaskState {
   tasks: Task[];
@@ -25,21 +15,18 @@ const initialState: TaskState = {
   error: null,
 };
 
-export const fetchTasks = createAsyncThunk(
-  'tasks/fetchTasks',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await taskAPI.getTasks();
-      return response;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch tasks');
-    }
+export const getTasks = createAsyncThunk('tasks/getTasks', async (_, { rejectWithValue }) => {
+  try {
+    const response = await taskAPI.getTasks();
+    return response;
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch tasks');
   }
-);
+});
 
 export const createTask = createAsyncThunk(
   'tasks/createTask',
-  async (taskData: { title: string; description: string; dueDate: string }, { rejectWithValue }) => {
+  async (taskData: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
       const response = await taskAPI.createTask(taskData);
       return response;
@@ -51,9 +38,9 @@ export const createTask = createAsyncThunk(
 
 export const updateTask = createAsyncThunk(
   'tasks/updateTask',
-  async ({ id, ...taskData }: { id: string } & Partial<Task>, { rejectWithValue }) => {
+  async (taskData: Partial<Task> & { id: string }, { rejectWithValue }) => {
     try {
-      const response = await taskAPI.updateTask(id, taskData);
+      const response = await taskAPI.updateTask(taskData.id, taskData);
       return response;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to update task');
@@ -63,10 +50,10 @@ export const updateTask = createAsyncThunk(
 
 export const deleteTask = createAsyncThunk(
   'tasks/deleteTask',
-  async (id: string, { rejectWithValue }) => {
+  async (taskId: string, { rejectWithValue }) => {
     try {
-      await taskAPI.deleteTask(id);
-      return id;
+      await taskAPI.deleteTask(taskId);
+      return taskId;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to delete task');
     }
@@ -83,16 +70,16 @@ const taskSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Tasks
-      .addCase(fetchTasks.pending, (state) => {
+      // Get Tasks
+      .addCase(getTasks.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchTasks.fulfilled, (state, action) => {
+      .addCase(getTasks.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks = action.payload;
       })
-      .addCase(fetchTasks.rejected, (state, action) => {
+      .addCase(getTasks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -142,4 +129,9 @@ const taskSlice = createSlice({
 });
 
 export const { clearError } = taskSlice.actions;
+
+export const selectTasks = (state: RootState) => state.tasks.tasks;
+export const selectTasksLoading = (state: RootState) => state.tasks.loading;
+export const selectTasksError = (state: RootState) => state.tasks.error;
+
 export default taskSlice.reducer; 

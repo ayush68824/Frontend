@@ -10,8 +10,8 @@ export interface Task {
   id: string;
   title: string;
   description: string;
-  dueDate: string;
-  status: 'pending' | 'completed';
+  dueDate?: string;
+  status: 'pending' | 'in-progress' | 'completed';
   priority: 'low' | 'medium' | 'high';
   userId: string;
   createdAt: string;

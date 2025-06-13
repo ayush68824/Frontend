@@ -1,23 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { createTask } from '../../store/slices/taskSlice';
+import { createTask, updateTask } from '../../store/slices/taskSlice';
 import { AppDispatch } from '../../store/store';
+import { Task } from '../../types';
 
 interface TaskFormProps {
+  task?: Task;
   onClose?: () => void;
 }
 
-const TaskForm = ({ onClose }: TaskFormProps) => {
+const TaskForm = ({ task, onClose }: TaskFormProps) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     dueDate: '',
-    priority: 'medium',
-    status: 'pending',
+    priority: 'medium' as const,
+    status: 'pending' as const,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        title: task.title,
+        description: task.description,
+        dueDate: task.dueDate || '',
+        priority: task.priority,
+        status: task.status,
+      });
+    }
+  }, [task]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -43,11 +57,20 @@ const TaskForm = ({ onClose }: TaskFormProps) => {
         throw new Error('Due date is required');
       }
 
-      await dispatch(createTask({
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        dueDate: formData.dueDate,
-      })).unwrap();
+      if (task) {
+        await dispatch(updateTask({
+          id: task.id,
+          ...formData,
+        })).unwrap();
+      } else {
+        await dispatch(createTask({
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          dueDate: formData.dueDate,
+          priority: formData.priority,
+          status: formData.status,
+        })).unwrap();
+      }
 
       // Reset form
       setFormData({
@@ -62,8 +85,8 @@ const TaskForm = ({ onClose }: TaskFormProps) => {
         onClose();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create task. Please try again.');
-      console.error('Task creation error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save task. Please try again.');
+      console.error('Task save error:', err);
     } finally {
       setLoading(false);
     }
@@ -149,6 +172,7 @@ const TaskForm = ({ onClose }: TaskFormProps) => {
           disabled={loading}
         >
           <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
           <option value="completed">Completed</option>
         </select>
       </div>
@@ -179,7 +203,7 @@ const TaskForm = ({ onClose }: TaskFormProps) => {
               : 'hover:bg-primary/90'
           } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
         >
-          {loading ? 'Creating...' : 'Create Task'}
+          {loading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
         </button>
       </div>
     </form>
