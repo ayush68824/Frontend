@@ -7,8 +7,8 @@ import { ClipboardDocumentListIcon, TagIcon, Cog6ToothIcon, ArrowLeftOnRectangle
 import { AppDispatch } from '../../store/store';
 
 const navLinks = [
-  { name: 'Dashboard', to: '/dashboard', icon: <HomeIcon className="h-6 w-6" /> },
-  { name: 'My Task', to: '/all-tasks', icon: <ClipboardDocumentListIcon className="h-6 w-6" /> },
+  { name: 'Dashboard', to: '/', icon: <HomeIcon className="h-6 w-6" /> },
+  { name: 'My Tasks', to: '/all-tasks', icon: <ClipboardDocumentListIcon className="h-6 w-6" /> },
   { name: 'Task Categories', to: '/categories', icon: <TagIcon className="h-6 w-6" /> },
   { name: 'Settings', to: '/settings', icon: <Cog6ToothIcon className="h-6 w-6" /> },
 ];
@@ -31,13 +31,13 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="h-screen w-64 bg-[#FF5A5F] flex flex-col text-white shadow-lg">
+    <aside className="h-screen w-64 bg-primary flex flex-col text-primary-foreground shadow-lg">
       <div className="flex flex-col items-center py-8">
         {user?.avatar && (
           <img
             src={user.avatar}
             alt="avatar"
-            className="w-20 h-20 rounded-full border-4 border-white mb-2"
+            className="w-20 h-20 rounded-full border-4 border-primary-foreground/20 mb-2"
           />
         )}
         <div className="font-bold text-lg">{user?.name || 'User Name'}</div>
@@ -48,7 +48,11 @@ const Sidebar: React.FC = () => {
           <Link
             key={link.name}
             to={link.to}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive(link.to) ? 'bg-white text-[#FF5A5F]' : 'hover:bg-white/20'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              isActive(link.to)
+                ? 'bg-primary-foreground text-primary'
+                : 'hover:bg-primary-foreground/20'
+            }`}
           >
             {link.icon}
             <span className="font-medium">{link.name}</span>
@@ -57,7 +61,7 @@ const Sidebar: React.FC = () => {
       </nav>
       <button
         onClick={handleLogout}
-        className="flex items-center gap-3 px-4 py-3 m-4 rounded-lg bg-white text-[#FF5A5F] font-semibold hover:bg-red-100 transition-colors"
+        className="flex items-center gap-3 px-4 py-3 m-4 rounded-lg bg-primary-foreground text-primary font-semibold hover:bg-primary-foreground/90 transition-colors"
       >
         <ArrowLeftOnRectangleIcon className="h-6 w-6" />
         Logout
