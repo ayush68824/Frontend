@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Task } from '../../types';
-import { fetchTasks } from '../../store/slices/taskSlice';
-import { AppDispatch, RootState } from '../../store';
+import { getTasks } from '../../store/slices/taskSlice';
+import { AppDispatch, RootState } from '../../store/store';
 import TaskItem from './TaskItem';
 import TaskForm from './TaskForm';
 
@@ -14,7 +14,7 @@ const TaskList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    dispatch(fetchTasks());
+    dispatch(getTasks());
   }, [dispatch]);
 
   const filteredTasks = tasks.filter(task => {
@@ -36,6 +36,14 @@ const TaskList: React.FC = () => {
     return (
       <div className="text-center text-red-600 p-4">
         Error: {error}
+      </div>
+    );
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <div className="text-center text-gray-500 py-8">
+        No tasks found. Create a new task to get started!
       </div>
     );
   }

@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
 import { ClipboardDocumentListIcon, TagIcon, Cog6ToothIcon, ArrowLeftOnRectangleIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { AppDispatch } from '../../store/store';
 
 const navLinks = [
   { name: 'Dashboard', to: '/dashboard', icon: <HomeIcon className="h-6 w-6" /> },
@@ -13,9 +14,21 @@ const navLinks = [
 ];
 
 const Sidebar: React.FC = () => {
-  const { user } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
 
   return (
     <aside className="h-screen w-64 bg-[#FF5A5F] flex flex-col text-white shadow-lg">
@@ -35,7 +48,7 @@ const Sidebar: React.FC = () => {
           <Link
             key={link.name}
             to={link.to}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === link.to ? 'bg-white text-[#FF5A5F]' : 'hover:bg-white/20'}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive(link.to) ? 'bg-white text-[#FF5A5F]' : 'hover:bg-white/20'}`}
           >
             {link.icon}
             <span className="font-medium">{link.name}</span>
@@ -43,7 +56,7 @@ const Sidebar: React.FC = () => {
         ))}
       </nav>
       <button
-        onClick={() => dispatch(logout())}
+        onClick={handleLogout}
         className="flex items-center gap-3 px-4 py-3 m-4 rounded-lg bg-white text-[#FF5A5F] font-semibold hover:bg-red-100 transition-colors"
       >
         <ArrowLeftOnRectangleIcon className="h-6 w-6" />

@@ -1,14 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authAPI } from '../../services/api';
 import { RootState } from '../store';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-  role: 'user' | 'admin';
-}
+import { User, AuthResponse } from '../../types';
 
 interface AuthState {
   user: User | null;
@@ -68,7 +61,7 @@ export const logout = createAsyncThunk('auth/logout', async () => {
 
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
-  async (userData: { name?: string; avatar?: string }, { rejectWithValue }) => {
+  async (userData: Partial<User>, { rejectWithValue }) => {
     try {
       const response = await authAPI.updateProfile(userData);
       return response;
@@ -84,6 +77,12 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    setCredentials: (state, action: { payload: AuthResponse }) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      localStorage.setItem('token', action.payload.token);
     },
   },
   extraReducers: (builder) => {
@@ -150,7 +149,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, setCredentials } = authSlice.actions;
 
 export const selectAuth = (state: RootState) => state.auth;
 export const selectUser = (state: RootState) => state.auth.user;

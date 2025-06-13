@@ -4,17 +4,22 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { RootState } from '../../types';
 import { logout } from '../../store/slices/authSlice';
+import { AppDispatch } from '../../store/store';
 
 const Navbar = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    toast.success('Logged out successfully');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
