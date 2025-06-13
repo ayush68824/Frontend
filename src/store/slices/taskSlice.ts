@@ -1,6 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { Task } from '../../types';
-import { tasksAPI } from '../../services/api';
+import { taskAPI } from '../../services/api';
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  status: 'pending' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface TaskState {
   tasks: Task[];
@@ -18,34 +29,34 @@ export const fetchTasks = createAsyncThunk(
   'tasks/fetchTasks',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await tasksAPI.getTasks();
+      const response = await taskAPI.getTasks();
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch tasks');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch tasks');
     }
   }
 );
 
 export const createTask = createAsyncThunk(
   'tasks/createTask',
-  async (taskData: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
+  async (taskData: { title: string; description: string; dueDate: string }, { rejectWithValue }) => {
     try {
-      const response = await tasksAPI.createTask(taskData);
+      const response = await taskAPI.createTask(taskData);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create task');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to create task');
     }
   }
 );
 
 export const updateTask = createAsyncThunk(
   'tasks/updateTask',
-  async ({ id, ...taskData }: Partial<Task> & { id: string }, { rejectWithValue }) => {
+  async ({ id, ...taskData }: { id: string } & Partial<Task>, { rejectWithValue }) => {
     try {
-      const response = await tasksAPI.updateTask(id, taskData);
+      const response = await taskAPI.updateTask(id, taskData);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update task');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to update task');
     }
   }
 );
@@ -54,10 +65,10 @@ export const deleteTask = createAsyncThunk(
   'tasks/deleteTask',
   async (id: string, { rejectWithValue }) => {
     try {
-      await tasksAPI.deleteTask(id);
+      await taskAPI.deleteTask(id);
       return id;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete task');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to delete task');
     }
   }
 );
@@ -72,7 +83,7 @@ const taskSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch tasks
+      // Fetch Tasks
       .addCase(fetchTasks.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -85,7 +96,7 @@ const taskSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Create task
+      // Create Task
       .addCase(createTask.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -98,7 +109,7 @@ const taskSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Update task
+      // Update Task
       .addCase(updateTask.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -114,7 +125,7 @@ const taskSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Delete task
+      // Delete Task
       .addCase(deleteTask.pending, (state) => {
         state.loading = true;
         state.error = null;

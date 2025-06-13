@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Task } from '../../types';
 import { createTask, updateTask } from '../../store/slices/taskSlice';
-import { AppDispatch } from '../../store';
+import { AppDispatch } from '../../store/store';
 import { toast } from 'react-toastify';
 
 interface TaskFormProps {
@@ -20,11 +20,22 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
     status: task?.status || 'pending',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+
     try {
+      if (!formData.title.trim()) {
+        throw new Error('Title is required');
+      }
+
+      if (!formData.dueDate) {
+        throw new Error('Due date is required');
+      }
+
       if (task) {
         await dispatch(updateTask({ id: task.id, ...formData })).unwrap();
         toast.success('Task updated successfully!');
@@ -33,9 +44,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
         toast.success('Task created successfully!');
       }
       onClose();
-    } catch (error: any) {
-      console.error('Error saving task:', error);
-      toast.error(error.message || 'Failed to save task. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save task. Please try again.');
+      console.error('Task creation error:', err);
     } finally {
       setLoading(false);
     }
@@ -47,9 +58,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
+    <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg shadow-md">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="title" className="block text-sm font-medium text-text mb-1">
           Title
         </label>
         <input
@@ -58,13 +69,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
           name="title"
           value={formData.title}
           onChange={handleChange}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          placeholder="Enter task title"
+          disabled={loading}
         />
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="description" className="block text-sm font-medium text-text mb-1">
           Description
         </label>
         <textarea
@@ -72,27 +84,30 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
           name="description"
           value={formData.description}
           onChange={handleChange}
+          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          placeholder="Enter task description"
           rows={3}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          disabled={loading}
         />
       </div>
 
       <div>
-        <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="dueDate" className="block text-sm font-medium text-text mb-1">
           Due Date
         </label>
         <input
-          type="date"
+          type="datetime-local"
           id="dueDate"
           name="dueDate"
           value={formData.dueDate}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          disabled={loading}
         />
       </div>
 
       <div>
-        <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="priority" className="block text-sm font-medium text-text mb-1">
           Priority
         </label>
         <select
@@ -100,7 +115,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
           name="priority"
           value={formData.priority}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          disabled={loading}
         >
           <option value="low">Low</option>
           <option value="medium">Medium</option>
@@ -109,7 +125,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
       </div>
 
       <div>
-        <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="status" className="block text-sm font-medium text-text mb-1">
           Status
         </label>
         <select
@@ -117,13 +133,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
           name="status"
           value={formData.status}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          disabled={loading}
         >
           <option value="pending">Pending</option>
           <option value="in-progress">In Progress</option>
           <option value="completed">Completed</option>
         </select>
       </div>
+
+      {error && (
+        <div className="text-error text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="flex justify-end space-x-3">
         <button
@@ -137,7 +160,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`px-4 py-2 text-sm font-medium text-white bg-primary ${
+            loading
+              ? 'bg-primary/70 cursor-not-allowed'
+              : 'hover:bg-primary/90'
+          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
         >
           {loading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
         </button>

@@ -22,63 +22,96 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 errors
+// Add response interceptor for better error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      store.dispatch(logout());
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
+    const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+    console.error('API Error:', errorMessage);
+    return Promise.reject(new Error(errorMessage));
   }
 );
 
 // Auth API calls
 export const authAPI = {
   login: async (email: string, password: string) => {
-    const response = await api.post<{ user: User; token: string }>('/auth/login', {
-      email,
-      password,
-    });
-    return response.data;
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      return response.data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   },
   register: async (name: string, email: string, password: string, avatar?: string) => {
     try {
-      const response = await api.post<{ user: User; token: string }>('/auth/register', {
-        name,
-        email,
-        password,
-        avatar,
-      });
+      const response = await api.post('/auth/register', { name, email, password, avatar });
       return response.data;
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
     }
   },
-  updateProfile: async (userData: Partial<User>) => {
-    const response = await api.put<{ user: User }>('/auth/profile', userData);
-    return response.data;
+  googleLogin: async (token: string) => {
+    try {
+      const response = await api.post('/auth/google', { token });
+      return response.data;
+    } catch (error) {
+      console.error('Google login error:', error);
+      throw error;
+    }
+  },
+  logout: async () => {
+    localStorage.removeItem('token');
+  },
+  updateProfile: async (userData: { name?: string; avatar?: string }) => {
+    try {
+      const response = await api.put('/auth/profile', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      throw error;
+    }
   },
 };
 
 // Tasks API calls
-export const tasksAPI = {
+export const taskAPI = {
   getTasks: async () => {
-    const response = await api.get<Task[]>('/tasks');
-    return response.data;
+    try {
+      const response = await api.get('/tasks');
+      return response.data;
+    } catch (error) {
+      console.error('Get tasks error:', error);
+      throw error;
+    }
   },
-  createTask: async (task: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
-    const response = await api.post<Task>('/tasks', task);
-    return response.data;
+  createTask: async (taskData: { title: string; description: string; dueDate: string }) => {
+    try {
+      const response = await api.post('/tasks', taskData);
+      return response.data;
+    } catch (error) {
+      console.error('Create task error:', error);
+      throw error;
+    }
   },
-  updateTask: async (id: string, task: Partial<Task>) => {
-    const response = await api.put<Task>(`/tasks/${id}`, task);
-    return response.data;
+  updateTask: async (id: string, taskData: { title?: string; description?: string; dueDate?: string; status?: string }) => {
+    try {
+      const response = await api.put(`/tasks/${id}`, taskData);
+      return response.data;
+    } catch (error) {
+      console.error('Update task error:', error);
+      throw error;
+    }
   },
   deleteTask: async (id: string) => {
-    await api.delete(`/tasks/${id}`);
+    try {
+      const response = await api.delete(`/tasks/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Delete task error:', error);
+      throw error;
+    }
   },
 };
 
