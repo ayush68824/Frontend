@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { register } from '../../store/slices/authSlice';
-import { RootState } from '../../store/store';
+import { AppDispatch, RootState } from '../../store/store';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,7 +12,7 @@ const Register = () => {
     confirmPassword: '',
   });
   const [error, setError] = useState<string | null>(null);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { loading } = useSelector((state: RootState) => state.auth);
 
@@ -38,7 +38,7 @@ const Register = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-      }));
+      })).unwrap();
       navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');

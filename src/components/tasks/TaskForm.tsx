@@ -1,26 +1,33 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Task } from '../../types';
-import { createTask, updateTask } from '../../store/slices/taskSlice';
+import { createTask } from '../../store/slices/taskSlice';
 import { AppDispatch } from '../../store/store';
-import { toast } from 'react-toastify';
 
 interface TaskFormProps {
-  task?: Task;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
-  const dispatch = useDispatch<AppDispatch>();
+const TaskForm = ({ onClose }: TaskFormProps) => {
   const [formData, setFormData] = useState({
-    title: task?.title || '',
-    description: task?.description || '',
-    dueDate: task?.dueDate || '',
-    priority: task?.priority || 'medium',
-    status: task?.status || 'pending',
+    title: '',
+    description: '',
+    dueDate: '',
+    priority: 'medium',
+    status: 'pending',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,25 +43,30 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
         throw new Error('Due date is required');
       }
 
-      if (task) {
-        await dispatch(updateTask({ id: task.id, ...formData })).unwrap();
-        toast.success('Task updated successfully!');
-      } else {
-        await dispatch(createTask(formData)).unwrap();
-        toast.success('Task created successfully!');
+      await dispatch(createTask({
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        dueDate: formData.dueDate,
+      })).unwrap();
+
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        dueDate: '',
+        priority: 'medium',
+        status: 'pending',
+      });
+
+      if (onClose) {
+        onClose();
       }
-      onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save task. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to create task. Please try again.');
       console.error('Task creation error:', err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -137,7 +149,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
           disabled={loading}
         >
           <option value="pending">Pending</option>
-          <option value="in-progress">In Progress</option>
           <option value="completed">Completed</option>
         </select>
       </div>
@@ -149,14 +160,16 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
       )}
 
       <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancel
-        </button>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium text-text bg-background border border-border rounded-md hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          >
+            Cancel
+          </button>
+        )}
         <button
           type="submit"
           disabled={loading}
@@ -166,7 +179,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
               : 'hover:bg-primary/90'
           } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
         >
-          {loading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
+          {loading ? 'Creating...' : 'Create Task'}
         </button>
       </div>
     </form>

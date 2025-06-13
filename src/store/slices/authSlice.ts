@@ -28,25 +28,37 @@ const initialState: AuthState = {
 
 export const login = createAsyncThunk(
   'auth/login',
-  async (credentials: { email: string; password: string }) => {
-    const response = await authAPI.login(credentials);
-    return response;
+  async (credentials: { email: string; password: string }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.login(credentials.email, credentials.password);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Login failed');
+    }
   }
 );
 
 export const register = createAsyncThunk(
   'auth/register',
-  async (userData: { email: string; password: string; name: string }) => {
-    const response = await authAPI.register(userData);
-    return response;
+  async (userData: { name: string; email: string; password: string }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.register(userData.name, userData.email, userData.password);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Registration failed');
+    }
   }
 );
 
 export const googleLogin = createAsyncThunk(
   'auth/googleLogin',
-  async (token: string) => {
-    const response = await authAPI.googleLogin(token);
-    return response;
+  async (token: string, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.googleLogin(token);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Google login failed');
+    }
   }
 );
 
@@ -56,9 +68,13 @@ export const logout = createAsyncThunk('auth/logout', async () => {
 
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
-  async (data: { name?: string; avatar?: File }) => {
-    const response = await authAPI.updateProfile(data);
-    return response;
+  async (userData: { name?: string; avatar?: string }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.updateProfile(userData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Profile update failed');
+    }
   }
 );
 
@@ -86,7 +102,7 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Login failed';
+        state.error = action.payload as string;
       })
       // Register
       .addCase(register.pending, (state) => {
@@ -102,7 +118,7 @@ const authSlice = createSlice({
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Registration failed';
+        state.error = action.payload as string;
       })
       // Google Login
       .addCase(googleLogin.pending, (state) => {
@@ -118,7 +134,7 @@ const authSlice = createSlice({
       })
       .addCase(googleLogin.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Google login failed';
+        state.error = action.payload as string;
       })
       // Logout
       .addCase(logout.fulfilled, (state) => {
