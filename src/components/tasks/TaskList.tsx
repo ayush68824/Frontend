@@ -5,6 +5,7 @@ import { getTasks } from '../../store/slices/taskSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import TaskItem from './TaskItem';
 import TaskForm from './TaskForm';
+import { toast } from 'react-toastify';
 
 const TaskList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -14,7 +15,15 @@ const TaskList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    dispatch(getTasks());
+    const fetchTasks = async () => {
+      try {
+        await dispatch(getTasks()).unwrap();
+      } catch (err) {
+        console.error('Failed to fetch tasks:', err);
+        toast.error('Failed to load tasks. Please try again.');
+      }
+    };
+    fetchTasks();
   }, [dispatch]);
 
   const filteredTasks = tasks.filter(task => {
@@ -27,23 +36,21 @@ const TaskList: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-600 p-4">
-        Error: {error}
-      </div>
-    );
-  }
-
-  if (tasks.length === 0) {
-    return (
-      <div className="text-center text-gray-500 py-8">
-        No tasks found. Create a new task to get started!
+      <div className="text-center text-error p-4">
+        <p className="mb-4">Error: {error}</p>
+        <button
+          onClick={() => dispatch(getTasks())}
+          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -57,14 +64,14 @@ const TaskList: React.FC = () => {
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
         <div className="flex gap-2">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as typeof filter)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="all">All Tasks</option>
             <option value="pending">Pending</option>
@@ -73,7 +80,7 @@ const TaskList: React.FC = () => {
           </select>
           <button
             onClick={() => setShowTaskForm(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             Add Task
           </button>
@@ -81,8 +88,8 @@ const TaskList: React.FC = () => {
       </div>
 
       {showTaskForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-card">
             <TaskForm onClose={() => setShowTaskForm(false)} />
           </div>
         </div>
@@ -90,8 +97,20 @@ const TaskList: React.FC = () => {
 
       <div className="space-y-4">
         {filteredTasks.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            No tasks found. Create a new task to get started!
+          <div className="text-center text-text/60 py-8">
+            {tasks.length === 0 ? (
+              <div>
+                <p className="mb-4">No tasks found. Create a new task to get started!</p>
+                <button
+                  onClick={() => setShowTaskForm(true)}
+                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  Create Your First Task
+                </button>
+              </div>
+            ) : (
+              'No tasks match your current filter or search.'
+            )}
           </div>
         ) : (
           filteredTasks.map((task) => (
