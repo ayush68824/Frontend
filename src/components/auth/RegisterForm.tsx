@@ -28,7 +28,7 @@ const RegisterForm = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
@@ -40,13 +40,13 @@ const RegisterForm = () => {
       toast.error('You must agree to all terms');
       return;
     }
-    setLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
-      setLoading(false);
       return;
     }
+
+    setLoading(true);
 
     try {
       await dispatch(register({
@@ -54,6 +54,7 @@ const RegisterForm = () => {
         email: formData.email,
         password: formData.password,
       })).unwrap();
+
       toast.success('Registration successful!');
       navigate('/dashboard');
     } catch (error) {
@@ -67,7 +68,7 @@ const RegisterForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FF5A5F]">
       <div className="flex w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden">
-        {/* Illustration/Left Side */}
+        {/* Illustration Side */}
         <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-[#FF5A5F] p-8">
           <svg width="180" height="180" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="180" height="180" rx="24" fill="#fff" fillOpacity="0.2" />
@@ -78,11 +79,12 @@ const RegisterForm = () => {
           <p className="text-white text-opacity-80 mt-2 text-center">Create your account to get started!</p>
         </div>
 
-        {/* Form/Right Side */}
+        {/* Form Side */}
         <div className="flex-1 flex flex-col justify-center p-8">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">Sign Up</h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
+              {/* Name */}
               <div className="relative">
                 <span className="absolute left-3 top-2.5 text-gray-400">
                   <UserIcon className="h-5 w-5" />
@@ -99,6 +101,7 @@ const RegisterForm = () => {
                 />
               </div>
 
+              {/* Email */}
               <div className="relative">
                 <span className="absolute left-3 top-2.5 text-gray-400">
                   <EnvelopeIcon className="h-5 w-5" />
@@ -115,6 +118,7 @@ const RegisterForm = () => {
                 />
               </div>
 
+              {/* Password */}
               <div className="relative">
                 <span className="absolute left-3 top-2.5 text-gray-400">
                   <LockClosedIcon className="h-5 w-5" />
@@ -131,6 +135,7 @@ const RegisterForm = () => {
                 />
               </div>
 
+              {/* Confirm Password */}
               <div className="relative">
                 <span className="absolute left-3 top-2.5 text-gray-400">
                   <LockClosedIcon className="h-5 w-5" />
@@ -148,6 +153,7 @@ const RegisterForm = () => {
               </div>
             </div>
 
+            {/* Terms Agreement */}
             <div className="flex items-center gap-2">
               <input
                 id="agree"
@@ -162,6 +168,7 @@ const RegisterForm = () => {
               </label>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -171,10 +178,7 @@ const RegisterForm = () => {
             </button>
 
             <div className="text-sm text-center mt-4">
-              <Link
-                to="/login"
-                className="font-medium text-[#FF5A5F] hover:underline"
-              >
+              <Link to="/login" className="font-medium text-[#FF5A5F] hover:underline">
                 Already have an account? Sign in
               </Link>
             </div>
