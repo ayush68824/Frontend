@@ -1,22 +1,31 @@
 export interface User {
   id: string;
-  name: string;
   email: string;
+  name: string;
   avatar?: string;
-  createdAt: string;
-  updatedAt: string;
+  role: 'user' | 'admin';
 }
 
 export interface Task {
   id: string;
-  userId: string;
   title: string;
   description: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
   dueDate: string;
+  status: 'pending' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+  userId: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+export interface ApiError {
+  message: string;
+  status?: number;
 }
 
 export interface AuthState {

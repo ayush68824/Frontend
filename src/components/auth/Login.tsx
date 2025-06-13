@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { login, googleLogin } from '../../store/slices/authSlice';
 import { AppDispatch, RootState } from '../../store/store';
 
@@ -22,12 +22,14 @@ const Login = () => {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: { credential: string }) => {
-    try {
-      await dispatch(googleLogin(credentialResponse.credential)).unwrap();
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Google login failed:', err);
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      try {
+        await dispatch(googleLogin(credentialResponse.credential)).unwrap();
+        navigate('/dashboard');
+      } catch (err) {
+        console.error('Google login failed:', err);
+      }
     }
   };
 
