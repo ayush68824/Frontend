@@ -9,13 +9,21 @@ interface TaskFormProps {
   onClose?: () => void;
 }
 
+interface TaskFormData {
+  title: string;
+  description: string;
+  dueDate: string;
+  priority: Task['priority'];
+  status: Task['status'];
+}
+
 const TaskForm = ({ task, onClose }: TaskFormProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TaskFormData>({
     title: '',
     description: '',
     dueDate: '',
-    priority: 'medium' as const,
-    status: 'pending' as const,
+    priority: 'medium',
+    status: 'pending',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

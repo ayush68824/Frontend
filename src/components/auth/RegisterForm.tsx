@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { authAPI } from '../../services/api';
-import { setCredentials } from '../../store/slices/authSlice';
+import { register } from '../../store/slices/authSlice';
+import { AppDispatch } from '../../store/store';
 import { UserIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 interface RegisterFormData {
@@ -11,38 +11,26 @@ interface RegisterFormData {
   email: string;
   password: string;
   confirmPassword: string;
-  avatar?: string; // base64 or URL
 }
 
 const RegisterForm = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    avatar: '',
   });
   const [loading, setLoading] = useState(false);
   const [agree, setAgree] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, files } = e.target;
-    if (type === 'file' && files && files[0]) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, avatar: reader.result as string }));
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(files[0]);
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,13 +48,11 @@ const RegisterForm = () => {
     }
 
     try {
-      const { user, token } = await authAPI.register(
-        formData.name,
-        formData.email,
-        formData.password,
-        formData.avatar
-      );
-      dispatch(setCredentials({ user, token }));
+      await dispatch(register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      })).unwrap();
       toast.success('Registration successful!');
       navigate('/dashboard');
     } catch (error) {
@@ -155,18 +141,6 @@ const RegisterForm = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                 />
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm mb-1">Profile Photo (optional)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleChange}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#FF5A5F] file:text-white hover:file:bg-[#e14c4f]"
-                />
-                {avatarPreview && (
-                  <img src={avatarPreview} alt="Avatar Preview" className="mt-2 w-16 h-16 rounded-full object-cover border" />
-                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
