@@ -1,6 +1,9 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  # Make sure this line is correct if you use it
+  branch = "main" # <- do not include braces
+
 
 [build.environment]
   VITE_API_URL = "https://todo-full-stack-1-9ewe.onrender.com/api"
