@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Task } from '../../types';
 import { updateTask, deleteTask } from '../../store/slices/taskSlice';
-import { AppDispatch } from '../../store/store';
+import { AppDispatch } from '../../store';
 import { toast } from 'react-toastify';
 import TaskForm from './TaskForm';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 interface TaskItemProps {
   task: Task;
@@ -13,115 +14,100 @@ interface TaskItemProps {
 const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleStatusChange = async (newStatus: Task['status']) => {
     try {
-      setLoading(true);
       await dispatch(updateTask({ id: task.id, status: newStatus })).unwrap();
       toast.success('Task status updated successfully');
-    } catch (err) {
-      console.error('Failed to update task status:', err);
-      toast.error('Failed to update task status. Please try again.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Failed to update task status:', error);
+      toast.error('Failed to update task status');
     }
   };
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this task?')) {
+      setIsDeleting(true);
       try {
-        setLoading(true);
         await dispatch(deleteTask(task.id)).unwrap();
         toast.success('Task deleted successfully');
-      } catch (err) {
-        console.error('Failed to delete task:', err);
-        toast.error('Failed to delete task. Please try again.');
+      } catch (error) {
+        console.error('Failed to delete task:', error);
+        toast.error('Failed to delete task');
       } finally {
-        setLoading(false);
+        setIsDeleting(false);
       }
     }
   };
 
-  const getStatusColor = (status: Task['status']) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in-progress':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-yellow-100 text-yellow-800';
-    }
-  };
-
-  const getPriorityColor = (priority: Task['priority']) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-green-100 text-green-800';
-    }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'No due date';
-    try {
-      return new Date(dateString).toLocaleDateString();
-    } catch (err) {
-      console.error('Error formatting date:', err);
-      return 'Invalid date';
-    }
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   if (isEditing) {
     return (
-      <div className="mb-4">
+      <div className="bg-card p-4 rounded-lg shadow-sm">
         <TaskForm task={task} onClose={() => setIsEditing(false)} />
       </div>
     );
   }
 
   return (
-    <div className="bg-card p-4 rounded-lg shadow-sm border border-border">
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-semibold text-text">{task.title}</h3>
-        <div className="flex gap-2">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
-            {task.status}
-          </span>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
-            {task.priority}
-          </span>
-        </div>
-      </div>
-      
-      <p className="text-text/80 mb-4">{task.description}</p>
-      
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-text/60">
-          Due: {formatDate(task.dueDate)}
-        </div>
-        
-        <div className="flex gap-2">
-          <select
-            value={task.status}
-            onChange={(e) => handleStatusChange(e.target.value as Task['status'])}
-            disabled={loading}
-            className="px-2 py-1 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          >
-            <option value="pending">Pending</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
+    <div className="bg-card p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-foreground mb-2">{task.title}</h3>
+          <p className="text-muted-foreground mb-4">{task.description}</p>
           
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className={`status-badge status-${task.status}`}>
+              {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+            </span>
+            <span className={`priority-badge priority-${task.priority}`}>
+              {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+            </span>
+            {task.dueDate && (
+              <span className="text-sm text-muted-foreground">
+                Due: {formatDate(task.dueDate)}
+              </span>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <select
+              value={task.status}
+              onChange={(e) => handleStatusChange(e.target.value as Task['status'])}
+              className="select text-sm"
+              disabled={isDeleting}
+            >
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex gap-2 ml-4">
+          <button
+            onClick={() => setIsEditing(true)}
+            disabled={isDeleting}
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+            title="Edit task"
+          >
+            <PencilIcon className="h-5 w-5" />
+          </button>
           <button
             onClick={handleDelete}
-            disabled={loading}
-            className="px-2 py-1 text-sm text-error hover:text-error/80 focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2"
+            disabled={isDeleting}
+            className="p-2 text-error hover:text-error/80 transition-colors"
+            title="Delete task"
           >
-            Delete
+            <TrashIcon className="h-5 w-5" />
           </button>
         </div>
       </div>

@@ -31,41 +31,44 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="h-screen w-64 bg-primary flex flex-col text-primary-foreground shadow-lg">
-      <div className="flex flex-col items-center py-8">
-        {user?.avatar && (
-          <img
-            src={user.avatar}
-            alt="avatar"
-            className="w-20 h-20 rounded-full border-4 border-primary-foreground/20 mb-2"
-          />
-        )}
-        <div className="font-bold text-lg">{user?.name || 'User Name'}</div>
-        <div className="text-xs opacity-80">{user?.email || 'user@email.com'}</div>
+    <aside className="w-64 flex-shrink-0 bg-gray-800 text-white flex flex-col">
+      <div className="h-16 flex items-center justify-center text-2xl font-bold">
+        TaskMaster
       </div>
-      <nav className="flex-1 px-4 space-y-2">
-        {navLinks.map(link => (
+      <div className="flex flex-col items-center py-4">
+        <img
+          src={user?.avatar || 'https://via.placeholder.com/150'}
+          alt="avatar"
+          className="w-24 h-24 rounded-full border-4 border-gray-700"
+        />
+        <div className="mt-2 font-semibold text-lg">{user?.name || 'User Name'}</div>
+        <div className="text-sm text-gray-400">{user?.email || 'user@email.com'}</div>
+      </div>
+      <nav className="flex-1 px-2 space-y-1">
+        {navLinks.map((link) => (
           <Link
             key={link.name}
             to={link.to}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center px-2 py-2 text-sm font-medium rounded-md ${
               isActive(link.to)
-                ? 'bg-primary-foreground text-primary'
-                : 'hover:bg-primary-foreground/20'
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
             }`}
           >
-            {link.icon}
-            <span className="font-medium">{link.name}</span>
+            {React.cloneElement(link.icon, { className: 'mr-3 h-6 w-6' })}
+            {link.name}
           </Link>
         ))}
       </nav>
-      <button
-        onClick={handleLogout}
-        className="flex items-center gap-3 px-4 py-3 m-4 rounded-lg bg-primary-foreground text-primary font-semibold hover:bg-primary-foreground/90 transition-colors"
-      >
-        <ArrowLeftOnRectangleIcon className="h-6 w-6" />
-        Logout
-      </button>
+      <div className="p-2">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white"
+        >
+          <ArrowLeftOnRectangleIcon className="mr-3 h-6 w-6" />
+          Logout
+        </button>
+      </div>
     </aside>
   );
 };
