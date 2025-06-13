@@ -9,6 +9,7 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  initialized: boolean;
 }
 
 const initialState: AuthState = {
@@ -17,6 +18,7 @@ const initialState: AuthState = {
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,
   error: null,
+  initialized: false,
 };
 
 export const login = createAsyncThunk(
@@ -84,6 +86,14 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       localStorage.setItem('token', action.payload.token);
     },
+    initializeAuth: (state) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        state.token = token;
+        state.isAuthenticated = true;
+      }
+      state.initialized = true;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -102,6 +112,10 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        localStorage.removeItem('token');
       })
       // Register
       .addCase(register.pending, (state) => {
@@ -118,6 +132,10 @@ const authSlice = createSlice({
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        localStorage.removeItem('token');
       })
       // Google Login
       .addCase(googleLogin.pending, (state) => {
@@ -134,6 +152,10 @@ const authSlice = createSlice({
       .addCase(googleLogin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        localStorage.removeItem('token');
       })
       // Logout
       .addCase(logout.fulfilled, (state) => {
@@ -149,10 +171,11 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, setCredentials } = authSlice.actions;
+export const { clearError, setCredentials, initializeAuth } = authSlice.actions;
 
 export const selectAuth = (state: RootState) => state.auth;
 export const selectUser = (state: RootState) => state.auth.user;
 export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
+export const selectIsInitialized = (state: RootState) => state.auth.initialized;
 
 export default authSlice.reducer; 
