@@ -1,14 +1,14 @@
 import axios from 'axios';
 import { User, Task, AuthResponse } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-console.log('API URL being used:', API_URL);
+const API_URL = 'https://task-management-backend-ayush68824.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // Add token to requests if it exists
@@ -24,6 +24,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
     const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
     console.error('API Error:', errorMessage);
     return Promise.reject(new Error(errorMessage));
