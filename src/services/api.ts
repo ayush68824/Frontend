@@ -107,8 +107,8 @@ export const authAPI = {
 export const taskAPI = {
   getTasks: async (): Promise<Task[]> => {
     try {
-    const response = await api.get<Task[]>('/tasks');
-    return response.data;
+      const response = await api.get<Task[]>('/tasks');
+      return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Failed to fetch tasks');
