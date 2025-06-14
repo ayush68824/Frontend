@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { User, Task, AuthResponse } from '../types';
 
-const API_URL = 'https://task-management-backend-ayush68824.vercel.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://todo-full-stack-1-9ewe.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -37,50 +37,119 @@ api.interceptors.response.use(
 // Auth API calls
 export const authAPI = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login', { email, password });
-    return response.data;
+    try {
+      const response = await api.post<AuthResponse>('/auth/login', { email, password });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Login failed');
+      }
+      throw error;
+    }
   },
 
-  register: async (name: string, email: string, password: string): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/register', { name, email, password });
-    return response.data;
+  register: async (userData: FormData): Promise<AuthResponse> => {
+    try {
+      const response = await api.post<AuthResponse>('/auth/register', userData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Registration failed');
+      }
+      throw error;
+    }
   },
 
   googleLogin: async (token: string): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/google', { token });
-    return response.data;
+    try {
+      const response = await api.post<AuthResponse>('/auth/google', { token });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Google login failed');
+      }
+      throw error;
+    }
   },
 
   logout: async (): Promise<void> => {
-    await api.post('/auth/logout');
-    localStorage.removeItem('token');
+    try {
+      await api.post('/auth/logout');
+      localStorage.removeItem('token');
+    } catch (error) {
+      console.error('Logout error:', error);
+      localStorage.removeItem('token');
+    }
   },
 
-  updateProfile: async (userData: Partial<User>): Promise<User> => {
-    const response = await api.put<User>('/auth/profile', userData);
-    return response.data;
+  updateProfile: async (userData: FormData): Promise<User> => {
+    try {
+      const response = await api.put<User>('/auth/profile', userData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Profile update failed');
+      }
+      throw error;
+    }
   },
 };
 
 // Tasks API calls
 export const taskAPI = {
   getTasks: async (): Promise<Task[]> => {
+    try {
     const response = await api.get<Task[]>('/tasks');
     return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to fetch tasks');
+      }
+      throw error;
+    }
   },
 
   createTask: async (taskData: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Task> => {
-    const response = await api.post<Task>('/tasks', taskData);
-    return response.data;
+    try {
+      const response = await api.post<Task>('/tasks/create', taskData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to create task');
+      }
+      throw error;
+    }
   },
 
   updateTask: async (taskId: string, taskData: Partial<Task>): Promise<Task> => {
-    const response = await api.put<Task>(`/tasks/${taskId}`, taskData);
-    return response.data;
+    try {
+      const response = await api.put<Task>(`/tasks/${taskId}/update`, taskData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to update task');
+      }
+      throw error;
+    }
   },
 
   deleteTask: async (taskId: string): Promise<void> => {
-    await api.delete(`/tasks/${taskId}`);
+    try {
+      await api.delete(`/tasks/${taskId}/delete`);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to delete task');
+      }
+      throw error;
+    }
   },
 };
 

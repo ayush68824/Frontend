@@ -11,6 +11,8 @@ const Settings = () => {
     name: user?.name || '',
     email: user?.email || '',
   });
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,13 +24,27 @@ const Settings = () => {
     }));
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setAvatar(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    const updateData = new FormData();
+    if (formData.name) updateData.append('name', formData.name);
+    if (avatar) updateData.append('avatar', avatar);
+
     try {
-      await dispatch(updateProfile(formData)).unwrap();
+      // This will require an update to the updateProfile thunk and API call
+      // to handle FormData. I will adjust that next.
+      await dispatch(updateProfile(updateData)).unwrap();
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update profile');
@@ -43,6 +59,26 @@ const Settings = () => {
       <h2 className="text-2xl font-bold text-text mb-6">Settings</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <img
+            src={avatarPreview || 'https://via.placeholder.com/150'}
+            alt="Avatar"
+            className="w-24 h-24 rounded-full object-cover"
+          />
+          <div>
+            <label htmlFor="avatar" className="block text-sm font-medium text-text mb-1">
+              Update Avatar
+            </label>
+            <input
+              type="file"
+              id="avatar"
+              name="avatar"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="input"
+            />
+          </div>
+        </div>
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-text mb-1">
             Name

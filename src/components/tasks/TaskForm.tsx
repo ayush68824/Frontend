@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { createTask, updateTask } from '../../store/slices/taskSlice';
-import { AppDispatch } from '../../store/store';
+import { AppDispatch } from '../../store';
 import { Task } from '../../types';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface TaskFormProps {
   task?: Task;
@@ -49,6 +52,15 @@ const TaskForm = ({ task, onClose }: TaskFormProps) => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      setFormData((prev) => ({
+        ...prev,
+        dueDate: date.toISOString(),
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,120 +113,128 @@ const TaskForm = ({ task, onClose }: TaskFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg shadow-md">
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-text mb-1">
-          Title
-        </label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          placeholder="Enter task title"
-          disabled={loading}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-text mb-1">
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          placeholder="Enter task description"
-          rows={3}
-          disabled={loading}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="dueDate" className="block text-sm font-medium text-text mb-1">
-          Due Date
-        </label>
-        <input
-          type="datetime-local"
-          id="dueDate"
-          name="dueDate"
-          value={formData.dueDate}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          disabled={loading}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="priority" className="block text-sm font-medium text-text mb-1">
-          Priority
-        </label>
-        <select
-          id="priority"
-          name="priority"
-          value={formData.priority}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          disabled={loading}
+    <div className="relative">
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute right-0 top-0 p-2 text-muted-foreground hover:text-foreground"
         >
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor="status" className="block text-sm font-medium text-text mb-1">
-          Status
-        </label>
-        <select
-          id="status"
-          name="status"
-          value={formData.status}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          disabled={loading}
-        >
-          <option value="pending">Pending</option>
-          <option value="in-progress">In Progress</option>
-          <option value="completed">Completed</option>
-        </select>
-      </div>
-
-      {error && (
-        <div className="text-error text-sm">
-          {error}
-        </div>
+          <XMarkIcon className="h-5 w-5" />
+        </button>
       )}
 
-      <div className="flex justify-end space-x-3">
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-foreground mb-1">
+            Title
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            className="input"
+            placeholder="Enter task title"
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-text bg-background border border-border rounded-md hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
+            Description
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className="input min-h-[100px] resize-none"
+            placeholder="Enter task description"
+            disabled={loading}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="dueDate" className="block text-sm font-medium text-foreground mb-1">
+              Due Date
+            </label>
+            <DatePicker
+              selected={formData.dueDate ? new Date(formData.dueDate) : null}
+              onChange={handleDateChange}
+              showTimeSelect
+              dateFormat="Pp"
+              className="input w-full"
+              placeholderText="Select date and time"
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="priority" className="block text-sm font-medium text-foreground mb-1">
+              Priority
+            </label>
+            <select
+              id="priority"
+              name="priority"
+              value={formData.priority}
+              onChange={handleChange}
+              className="select"
+              disabled={loading}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-foreground mb-1">
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            className="select"
+            disabled={loading}
           >
-            Cancel
-          </button>
+            <option value="pending">Pending</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        {error && (
+          <div className="text-destructive text-sm">
+            {error}
+          </div>
         )}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`px-4 py-2 text-sm font-medium text-white bg-primary ${
-            loading
-              ? 'bg-primary/70 cursor-not-allowed'
-              : 'hover:bg-primary/90'
-          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary`}
-        >
-          {loading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
-        </button>
-      </div>
-    </form>
+
+        <div className="flex justify-end gap-3 pt-4">
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary"
+          >
+            {loading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

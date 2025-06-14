@@ -4,48 +4,96 @@
 
 @layer base {
   :root {
+    /* Primary Colors */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    
+    /* Background Colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    
+    /* Secondary Colors */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    /* Accent Colors */
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    
+    /* Status Colors */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    --error: 0 84.2% 60.2%;
+    --error-foreground: 210 40% 98%;
+    
+    /* Neutral Colors */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
+    
+    /* Task Status Colors */
+    --status-pending: 38 92% 50%;
+    --status-in-progress: 221.2 83.2% 53.3%;
+    --status-completed: 142.1 76.2% 36.3%;
+    
+    /* Task Priority Colors */
+    --priority-low: 142.1 76.2% 36.3%;
+    --priority-medium: 38 92% 50%;
+    --priority-high: 0 84.2% 60.2%;
+    
+    /* Border Radius */
     --radius: 0.5rem;
   }
 
   .dark {
+    /* Primary Colors */
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    
+    /* Background Colors */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    
+    /* Secondary Colors */
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    
+    /* Accent Colors */
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    
+    /* Status Colors */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    --warning: 48 96% 89%;
+    --warning-foreground: 38 92% 50%;
+    --error: 0 62.8% 30.6%;
+    --error-foreground: 210 40% 98%;
+    
+    /* Neutral Colors */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+    
+    /* Task Status Colors */
+    --status-pending: 48 96% 89%;
+    --status-in-progress: 217.2 91.2% 59.8%;
+    --status-completed: 142.1 70.6% 45.3%;
+    
+    /* Task Priority Colors */
+    --priority-low: 142.1 70.6% 45.3%;
+    --priority-medium: 48 96% 89%;
+    --priority-high: 0 62.8% 30.6%;
   }
 
   * {
@@ -71,7 +119,7 @@
   }
 
   .btn-destructive {
-    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+    @apply bg-error text-error-foreground hover:bg-error/90;
   }
 
   .input {
@@ -80,6 +128,40 @@
 
   .select {
     @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Task Status Badges */
+  .status-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .status-pending {
+    @apply bg-[hsl(var(--status-pending))] text-[hsl(var(--status-pending-foreground))];
+  }
+
+  .status-in-progress {
+    @apply bg-[hsl(var(--status-in-progress))] text-[hsl(var(--status-in-progress-foreground))];
+  }
+
+  .status-completed {
+    @apply bg-[hsl(var(--status-completed))] text-[hsl(var(--status-completed-foreground))];
+  }
+
+  /* Task Priority Badges */
+  .priority-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .priority-low {
+    @apply bg-[hsl(var(--priority-low))] text-[hsl(var(--priority-low-foreground))];
+  }
+
+  .priority-medium {
+    @apply bg-[hsl(var(--priority-medium))] text-[hsl(var(--priority-medium-foreground))];
+  }
+
+  .priority-high {
+    @apply bg-[hsl(var(--priority-high))] text-[hsl(var(--priority-high-foreground))];
   }
 }
 
@@ -110,8 +192,7 @@ button, a, input, select {
 
 /* Responsive container padding */
 @media (max-width: 600px) {
-  .MuiContainer-root {
-    padding-left: 16px;
-    padding-right: 16px;
+  .container {
+    @apply px-4;
   }
 } 

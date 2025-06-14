@@ -35,9 +35,9 @@ export const login = createAsyncThunk(
 
 export const register = createAsyncThunk(
   'auth/register',
-  async (userData: { name: string; email: string; password: string }, { rejectWithValue }) => {
+  async (userData: FormData, { rejectWithValue }) => {
     try {
-      const response = await authAPI.register(userData.name, userData.email, userData.password);
+      const response = await authAPI.register(userData);
       return response;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Registration failed');
@@ -63,7 +63,7 @@ export const logout = createAsyncThunk('auth/logout', async () => {
 
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
-  async (userData: Partial<User>, { rejectWithValue }) => {
+  async (userData: FormData, { rejectWithValue }) => {
     try {
       const response = await authAPI.updateProfile(userData);
       return response;
