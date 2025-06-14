@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { register } from '../../store/slices/authSlice';
 import { AppDispatch } from '../../store/store';
-import { UserIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { UserIcon, EnvelopeIcon, LockClosedIcon, PhotoIcon } from '@heroicons/react/24/outline';
 
 interface RegisterFormData {
   name: string;
@@ -23,6 +23,8 @@ const RegisterForm = () => {
     password: '',
     confirmPassword: '',
   });
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [agree, setAgree] = useState(false);
 
@@ -32,6 +34,14 @@ const RegisterForm = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setAvatar(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,11 +59,15 @@ const RegisterForm = () => {
     setLoading(true);
 
     try {
-      await dispatch(register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      })).unwrap();
+      const registrationData = new FormData();
+      registrationData.append('name', formData.name);
+      registrationData.append('email', formData.email);
+      registrationData.append('password', formData.password);
+      if (avatar) {
+        registrationData.append('avatar', avatar);
+      }
+
+      await dispatch(register(registrationData as FormData)).unwrap();
 
       toast.success('Registration successful!');
       navigate('/dashboard');
@@ -84,6 +98,39 @@ const RegisterForm = () => {
           <h2 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">Sign Up</h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
+              {/* Avatar Upload */}
+              <div className="flex items-center justify-center">
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100">
+                    {avatarPreview ? (
+                      <img
+                        src={avatarPreview}
+                        alt="Avatar preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <PhotoIcon className="w-12 h-12" />
+                      </div>
+                    )}
+                  </div>
+                  <label
+                    htmlFor="avatar"
+                    className="absolute bottom-0 right-0 bg-[#FF5A5F] text-white p-1 rounded-full cursor-pointer hover:bg-[#e14c4f] transition"
+                  >
+                    <PhotoIcon className="w-4 h-4" />
+                    <input
+                      type="file"
+                      id="avatar"
+                      name="avatar"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
               {/* Name */}
               <div className="relative">
                 <span className="absolute left-3 top-2.5 text-gray-400">
