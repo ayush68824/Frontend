@@ -8,7 +8,11 @@ import TaskForm from './TaskForm';
 import { toast } from 'react-toastify';
 import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 
-const TaskList: React.FC = () => {
+interface TaskListProps {
+  limit?: number;
+}
+
+const TaskList: React.FC<TaskListProps> = ({ limit }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { tasks, loading, error } = useSelector((state: RootState) => state.tasks);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -32,7 +36,7 @@ const TaskList: React.FC = () => {
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
-  });
+  }).slice(0, limit);
 
   if (loading) {
     return (
@@ -57,70 +61,91 @@ const TaskList: React.FC = () => {
   }
 
   return (
-    <div className="divide-y divide-border">
-      <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative flex-1 w-full sm:w-auto">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="input pl-10 w-full"
-          />
-        </div>
-        <div className="flex gap-2">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as typeof filter)}
-            className="select"
-          >
-            <option value="all">All Tasks</option>
-            <option value="pending">Pending</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
+    <div className="space-y-4">
+      {!limit && (
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative flex-1 max-w-sm">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          </div>
           <button
             onClick={() => setShowTaskForm(true)}
-            className="btn btn-primary"
+            className="ml-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
-            Add Task
+            New Task
           </button>
-        </div>
-      </div>
-
-      {showTaskForm && (
-        <div className="fixed inset-0 bg-background/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-card">
-            <TaskForm onClose={() => setShowTaskForm(false)} />
-          </div>
         </div>
       )}
 
-      <div className="divide-y divide-border">
-        {filteredTasks.length === 0 ? (
-          <div className="text-center p-8">
-            {tasks.length === 0 ? (
-              <div>
-                <p className="text-muted-foreground mb-4">No tasks found. Create a new task to get started!</p>
-                <button
-                  onClick={() => setShowTaskForm(true)}
-                  className="btn btn-primary"
-                >
-                  Create Your First Task
-                </button>
-              </div>
-            ) : (
-              <p className="text-muted-foreground">No tasks match your current filter or search.</p>
-            )}
-          </div>
-        ) : (
-          filteredTasks.map((task) => (
+      {!limit && (
+        <div className="flex space-x-2 mb-4">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 rounded-md text-sm font-medium ${
+              filter === 'all'
+                ? 'bg-indigo-100 text-indigo-700'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFilter('pending')}
+            className={`px-3 py-1 rounded-md text-sm font-medium ${
+              filter === 'pending'
+                ? 'bg-yellow-100 text-yellow-700'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Pending
+          </button>
+          <button
+            onClick={() => setFilter('in-progress')}
+            className={`px-3 py-1 rounded-md text-sm font-medium ${
+              filter === 'in-progress'
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            In Progress
+          </button>
+          <button
+            onClick={() => setFilter('completed')}
+            className={`px-3 py-1 rounded-md text-sm font-medium ${
+              filter === 'completed'
+                ? 'bg-green-100 text-green-700'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Completed
+          </button>
+        </div>
+      )}
+
+      {showTaskForm && (
+        <div className="mb-4">
+          <TaskForm onClose={() => setShowTaskForm(false)} />
+        </div>
+      )}
+
+      {filteredTasks.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          {searchQuery ? 'No tasks match your search.' : 'No tasks found.'}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredTasks.map((task) => (
             <TaskItem key={task.id} task={task} />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

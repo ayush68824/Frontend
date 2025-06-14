@@ -101,7 +101,7 @@ export const authAPI = {
 export const taskAPI = {
   getTasks: async (): Promise<Task[]> => {
     try {
-      const response = await api.get<Task[]>('/tasks');
+      const response = await api.get<Task[]>('/api/tasks');
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -113,7 +113,7 @@ export const taskAPI = {
 
   createTask: async (taskData: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Task> => {
     try {
-      const response = await api.post<Task>('/tasks', taskData);
+      const response = await api.post<Task>('/api/tasks', taskData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -125,7 +125,7 @@ export const taskAPI = {
 
   updateTask: async (taskId: string, taskData: Partial<Task>): Promise<Task> => {
     try {
-      const response = await api.put<Task>(`/tasks/${taskId}`, taskData);
+      const response = await api.put<Task>(`/api/tasks/${taskId}`, taskData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -137,7 +137,7 @@ export const taskAPI = {
 
   deleteTask: async (taskId: string): Promise<void> => {
     try {
-      await api.delete(`/tasks/${taskId}`);
+      await api.delete(`/api/tasks/${taskId}`);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Failed to delete task');

@@ -37,9 +37,9 @@ const Sidebar: React.FC = () => {
       </div>
       <div className="flex flex-col items-center py-4">
         <img
-          src={user?.avatar || 'https://via.placeholder.com/150'}
+          src={user?.avatar ? `${import.meta.env.VITE_API_URL}${user.avatar}` : 'https://via.placeholder.com/150'}
           alt="avatar"
-          className="w-24 h-24 rounded-full border-4 border-gray-700"
+          className="w-24 h-24 rounded-full border-4 border-gray-700 object-cover"
         />
         <div className="mt-2 font-semibold text-lg">{user?.name || 'User Name'}</div>
         <div className="text-sm text-gray-400">{user?.email || 'user@email.com'}</div>
