@@ -250,34 +250,35 @@ const Dashboard: React.FC = () => {
         <DialogTitle>{editTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
         <DialogContent>
           <TaskForm
-            onSubmit={editTask ? handleUpdateTask : handleCreateTask}
-            loading={createLoading}
-            submitLabel={editTask ? 'Update Task' : 'Create Task'}
             initial={editTask ? {
               title: editTask.title,
               description: editTask.description,
               dueDate: editTask.dueDate,
               priority: editTask.priority,
               status: editTask.status,
-            } : {}}
-            token={token}
+              image: null // We don't pass the image URL as it's not a File
+            } : undefined}
+            onSubmit={editTask ? handleUpdateTask : handleCreateTask}
+            loading={createLoading}
+            submitLabel={editTask ? 'Update' : 'Create'}
           />
-          {createError && <Alert severity="error" sx={{ mt: 2 }}>{createError}</Alert>}
+          {createError && <Alert severity="error">{createError}</Alert>}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setOpen(false); setEditTask(null); }} color="secondary">Cancel</Button>
-        </DialogActions>
       </Dialog>
       <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
         <DialogTitle>Delete Task</DialogTitle>
         <DialogContent>
           <Typography>Are you sure you want to delete this task?</Typography>
-          {deleteError && <Alert severity="error" sx={{ mt: 2 }}>{deleteError}</Alert>}
+          {deleteError && <Alert severity="error">{deleteError}</Alert>}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteId(null)} color="secondary">Cancel</Button>
-          <Button onClick={handleDeleteTask} color="error" disabled={deleteLoading}>
-            {deleteLoading ? <CircularProgress size={20} /> : 'Delete'}
+          <Button onClick={() => setDeleteId(null)}>Cancel</Button>
+          <Button 
+            onClick={handleDeleteTask} 
+            color="error" 
+            disabled={deleteLoading}
+          >
+            {deleteLoading ? <CircularProgress size={24} /> : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>
