@@ -1,9 +1,10 @@
 import axios from 'axios'
+import type { AxiosInstance } from 'axios'
 
 const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
 
 // Create axios instance with default config
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -19,7 +20,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-export const getTasks = async (token: string) => {
+export const getTasks = async () => {
   try {
     const res = await api.get('/tasks')
     return res.data
@@ -28,7 +29,7 @@ export const getTasks = async (token: string) => {
   }
 }
 
-export const createTask = async (token: string, data: FormData) => {
+export const createTask = async (data: FormData) => {
   try {
     const res = await api.post('/tasks', data, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -39,7 +40,7 @@ export const createTask = async (token: string, data: FormData) => {
   }
 }
 
-export const updateTask = async (token: string, id: string, data: FormData) => {
+export const updateTask = async (id: string, data: FormData) => {
   try {
     const res = await api.put(`/tasks/${id}`, data, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -50,7 +51,7 @@ export const updateTask = async (token: string, id: string, data: FormData) => {
   }
 }
 
-export const deleteTask = async (token: string, id: string) => {
+export const deleteTask = async (id: string) => {
   try {
     const res = await api.delete(`/tasks/${id}`)
     return res.data
@@ -59,7 +60,7 @@ export const deleteTask = async (token: string, id: string) => {
   }
 }
 
-export const getCategories = async (token: string) => {
+export const getCategories = async () => {
   try {
     const res = await api.get('/categories')
     return res.data
@@ -68,7 +69,7 @@ export const getCategories = async (token: string) => {
   }
 }
 
-export const updateProfile = async (token: string, data: FormData) => {
+export const updateProfile = async (data: FormData) => {
   try {
     const res = await api.put('/users/profile', data, {
       headers: { 'Content-Type': 'multipart/form-data' }

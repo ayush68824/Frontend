@@ -38,7 +38,7 @@ const Settings: React.FC = () => {
         formData.append('photo', photo)
       }
       
-      const response = await updateProfile(token, formData)
+      const response = await updateProfile(formData)
       
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user))

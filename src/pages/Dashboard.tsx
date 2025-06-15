@@ -49,7 +49,7 @@ const Dashboard: React.FC = () => {
   const fetchTasks = () => {
     if (!token) return
     setLoading(true)
-    getTasks(token)
+    getTasks()
       .then(data => setTasks(data.tasks || data))
       .catch(() => setError('Failed to load tasks'))
       .finally(() => setLoading(false))
@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
 
   const fetchCategories = () => {
     if (!token) return
-    getCategories(token)
+    getCategories()
       .then(data => setCategories(data.categories || data))
       .catch(() => setCategories([]))
   }
@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
     setCreateLoading(true)
     setCreateError(null)
     try {
-      const response = await createTask(token, formData)
+      const response = await createTask(formData)
       if (response.task) {
         setOpen(false)
         fetchTasks()
@@ -101,7 +101,7 @@ const Dashboard: React.FC = () => {
     setCreateLoading(true)
     setCreateError(null)
     try {
-      const response = await updateTask(token, editTask._id, formData)
+      const response = await updateTask(editTask._id, formData)
       if (response.task) {
         setOpen(false)
         setEditTask(null)
@@ -121,11 +121,11 @@ const Dashboard: React.FC = () => {
     setDeleteLoading(true)
     setDeleteError(null)
     try {
-      await deleteTask(token, deleteId)
+      await deleteTask(deleteId)
       setDeleteId(null)
       fetchTasks()
     } catch (e: any) {
-      setDeleteError(e.response?.data?.message || 'Failed to delete task')
+      setDeleteError(e.message || 'Failed to delete task')
     } finally {
       setDeleteLoading(false)
     }
@@ -136,7 +136,7 @@ const Dashboard: React.FC = () => {
     try {
       const formData = new FormData()
       formData.append('status', task.status === 'Completed' ? 'Not Started' : 'Completed')
-      await updateTask(token, task._id, formData)
+      await updateTask(task._id, formData)
       fetchTasks()
     } catch {}
   }
