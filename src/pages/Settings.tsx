@@ -4,28 +4,28 @@ import { Box, Typography, TextField, Button, Avatar, CircularProgress, Alert, St
 import { updateProfile } from '../utils/api'
 
 const Settings: React.FC = () => {
-  const { user, token, setError, updateUser } = useAuth()
+  const { user, updateUser } = useAuth()
   const [name, setName] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
   const [photo, setPhoto] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(user?.photo || null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState('')
-  const [error, setLocalError] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  if (!user || !token) return null
+  if (!user) return null
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setLocalError('Image size should be less than 5MB')
+        setError('Image size should be less than 5MB')
         return
       }
       // Check file type
       if (!file.type.startsWith('image/')) {
-        setLocalError('Please upload an image file')
+        setError('Please upload an image file')
         return
       }
       setPhoto(file)
@@ -41,34 +41,31 @@ const Settings: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+    setSuccess(null)
     setLoading(true)
-    setSuccess('')
-    setLocalError('')
-    setError('')
 
     try {
       const formData = new FormData()
       formData.append('name', name.trim())
       formData.append('email', email.trim())
+      
       if (photo && photo instanceof File) {
         formData.append('photo', photo)
       }
-      
+
       const response = await updateProfile(formData)
-      
       if (response.user) {
-        // Update user in localStorage and context
-        localStorage.setItem('user', JSON.stringify(response.user))
         updateUser(response.user)
-        setSuccess('Profile updated successfully!')
+        setSuccess('Profile updated successfully')
+        setPhotoPreview(null)
+        setPhoto(null)
       } else {
         throw new Error('Invalid response from server')
       }
-    } catch (e: any) {
-      console.error('Profile update error:', e)
-      const errorMessage = e.message || 'Failed to update profile'
-      setLocalError(errorMessage)
-      setError(errorMessage)
+    } catch (err: any) {
+      console.error('Profile update error:', err)
+      setError(err.message || 'Failed to update profile')
     } finally {
       setLoading(false)
     }

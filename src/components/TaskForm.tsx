@@ -42,6 +42,46 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   const [titleError, setTitleError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    
+    if (!title.trim()) {
+      setTitleError('Title is required')
+      return
+    }
+    
+    try {
+      const formData = new FormData()
+      formData.append('title', title.trim())
+      formData.append('description', description.trim())
+      if (dueDate) {
+        formData.append('dueDate', format(dueDate, 'yyyy-MM-dd'))
+      }
+      formData.append('priority', priority)
+      formData.append('status', status)
+      
+      if (image && image instanceof File) {
+        // Check file size (max 5MB)
+        if (image.size > 5 * 1024 * 1024) {
+          setError('Image size should be less than 5MB')
+          return
+        }
+        // Check file type
+        if (!image.type.startsWith('image/')) {
+          setError('Please upload an image file')
+          return
+        }
+        formData.append('image', image)
+      }
+      
+      await onSubmit(formData)
+    } catch (err: any) {
+      console.error('Task submission error:', err)
+      setError(err.message || 'Failed to create task. Please try again.')
+    }
+  }
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -63,36 +103,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
         }
       }
       reader.readAsDataURL(file)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    
-    if (!title.trim()) {
-      setTitleError('Title is required')
-      return
-    }
-    
-    try {
-      const formData = new FormData()
-      formData.append('title', title.trim())
-      formData.append('description', description.trim())
-      if (dueDate) {
-        formData.append('dueDate', format(dueDate, 'yyyy-MM-dd'))
-      }
-      formData.append('priority', priority)
-      formData.append('status', status)
-      
-      if (image && image instanceof File) {
-        formData.append('image', image)
-      }
-      
-      await onSubmit(formData)
-    } catch (err: any) {
-      console.error('Task submission error:', err)
-      setError(err.message || 'Failed to create task. Please try again.')
     }
   }
 
