@@ -17,12 +17,13 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 }))
 
 const Register: React.FC = () => {
-  const { register, googleSignIn, loading, error, setError, user } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [error, setError] = useState('')
+  const { register, googleSignIn, user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {

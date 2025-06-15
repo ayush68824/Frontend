@@ -44,8 +44,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   const [priority, setPriority] = useState(initial.priority || 'Moderate')
   const [status, setStatus] = useState(initial.status || 'Not Started')
   const [image, setImage] = useState<File | null>(initial.image || null)
-  const [error, setError] = useState<string | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
+  const [titleError, setTitleError] = useState<string | null>(null)
 
   useEffect(() => {
     if (token) {
@@ -54,11 +54,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
           if (data && Array.isArray(data.categories)) {
             setCategories(data.categories)
           } else {
-            setError('Failed to load categories')
+            setTitleError('Failed to load categories')
           }
         })
         .catch(() => {
-          setError('Failed to load categories')
+          setTitleError('Failed to load categories')
         })
     }
   }, [token])
@@ -66,7 +66,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim()) {
-      setError('Title is required')
+      setTitleError('Title is required')
       return
     }
     
@@ -93,7 +93,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
           required 
           fullWidth 
           variant="outlined" 
-          error={!!error}
+          error={!!titleError}
+          helperText={titleError}
         />
         <TextField 
           label="Description" 

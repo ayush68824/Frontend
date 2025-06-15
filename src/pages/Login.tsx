@@ -16,9 +16,10 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 }))
 
 const Login: React.FC = () => {
-  const { login, googleSignIn, loading, error, setError, user } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const { login, googleSignIn, user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -48,9 +49,7 @@ const Login: React.FC = () => {
     }
   }
 
-  return loading ? (
-    <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 8 }} />
-  ) : (
+  return (
     <Container maxWidth="sm">
       <StyledPaper elevation={3}>
         <Typography variant="h4" component="h1" gutterBottom>

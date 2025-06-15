@@ -14,7 +14,7 @@ const navItems = [
 ]
 
 const Sidebar: React.FC = () => {
-  const { user, logout, token } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const theme = useTheme()
