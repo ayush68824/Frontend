@@ -23,7 +23,7 @@ const Sidebar: React.FC = () => {
   const drawerContent = (
     <Box display="flex" flexDirection="column" height="100%">
       <Box display="flex" flexDirection="column" alignItems="center" py={3}>
-        <Avatar src={user?.photo || ''} sx={{ width: 64, height: 64, mb: 1 }} />
+        <Avatar src={user?.photo} sx={{ width: 64, height: 64, mb: 1 }} />
         <Typography variant="subtitle1" fontWeight={600}>{user?.name || 'User'}</Typography>
         <Typography variant="body2" color="text.secondary">{user?.email || ''}</Typography>
       </Box>

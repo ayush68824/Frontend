@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AuthForm from '../components/AuthForm'
 import { useAuth } from '../context/AuthContext'
 import { CircularProgress, Box, Stack, Divider, Paper, Alert } from '@mui/material'
-import { GoogleLogin } from '@react-oauth/google'
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google'
 
 const Register: React.FC = () => {
   const { register, googleSignIn, loading, error, setError, user } = useAuth()
@@ -40,9 +40,12 @@ const Register: React.FC = () => {
     }
   }
 
-  const handleGoogle = async () => {
-    // TODO: Integrate Google OAuth. For now, just show a message.
-    setError('Google sign-in not implemented yet')
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      await googleSignIn(credentialResponse.credential)
+    } else {
+      setError('Google sign-up failed')
+    }
   }
 
   return loading ? (
@@ -62,7 +65,7 @@ const Register: React.FC = () => {
             error={error || undefined}
             submitLabel="Register"
             googleLabel="Sign up with Google"
-            onGoogle={handleGoogle}
+            onGoogle={() => {}}
             showPhotoUpload
             photoUrl={photoUrl}
             onPhotoChange={handlePhotoChange}
@@ -70,13 +73,7 @@ const Register: React.FC = () => {
           <Divider>or</Divider>
           <Box display="flex" justifyContent="center">
             <GoogleLogin
-              onSuccess={async (credentialResponse) => {
-                if (credentialResponse.credential) {
-                  await googleSignIn(credentialResponse.credential)
-                } else {
-                  setError('Google sign-up failed')
-                }
-              }}
+              onSuccess={handleGoogleSuccess}
               onError={() => setError('Google sign-up failed')}
               width="100%"
             />

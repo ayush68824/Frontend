@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AuthForm from '../components/AuthForm'
 import { useAuth } from '../context/AuthContext'
 import { CircularProgress, Box, Stack, Paper, Button } from '@mui/material'
-import { GoogleLogin } from '@react-oauth/google'
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google'
 
 const Login: React.FC = () => {
   const { login, googleSignIn, loading, error, setError, user } = useAuth()
@@ -18,6 +18,14 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await login(email, password)
+  }
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      await googleSignIn(credentialResponse.credential)
+    } else {
+      setError('Google sign-in failed')
+    }
   }
 
   return loading ? (
@@ -40,13 +48,7 @@ const Login: React.FC = () => {
           />
           <Box display="flex" justifyContent="center">
             <GoogleLogin
-              onSuccess={async (credentialResponse) => {
-                if (credentialResponse.credential) {
-                  await googleSignIn(credentialResponse.credential)
-                } else {
-                  setError('Google sign-in failed')
-                }
-              }}
+              onSuccess={handleGoogleSuccess}
               onError={() => setError('Google sign-in failed')}
               width="100%"
             />

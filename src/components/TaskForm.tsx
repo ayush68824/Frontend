@@ -5,6 +5,11 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
 import { format } from 'date-fns'
 
+interface Category {
+  _id: string;
+  name: string;
+}
+
 const priorities = [
   { value: 'High', label: 'High' },
   { value: 'Moderate', label: 'Moderate' },
@@ -40,16 +45,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   const [status, setStatus] = useState(initial.status || 'Not Started')
   const [image, setImage] = useState<File | null>(initial.image || null)
   const [error, setError] = useState<string | null>(null)
+  const [categories, setCategories] = useState<Category[]>([])
 
   useEffect(() => {
     if (token) {
       getCategories(token)
         .then(data => {
-          // Assuming data.categories is an array of objects with _id and name
-          // If it's different, you might need to adjust the code to fit your data structure
-          // For example, if it's an object with category names, you might want to use Object.values(data.categories)
-          // or a different method to extract category names
-          // This is a placeholder and should be adjusted based on your actual data structure
+          if (data && Array.isArray(data.categories)) {
+            setCategories(data.categories)
+          } else {
+            setError('Failed to load categories')
+          }
+        })
+        .catch(() => {
           setError('Failed to load categories')
         })
     }
