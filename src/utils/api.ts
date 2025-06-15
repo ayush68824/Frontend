@@ -20,9 +20,23 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Add response interceptor for better error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
+
 export const getTasks = async () => {
   try {
-    const res = await api.get('/tasks')
+    const res = await api.get('/task')
     return res.data
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to fetch tasks')
@@ -31,7 +45,7 @@ export const getTasks = async () => {
 
 export const createTask = async (data: FormData) => {
   try {
-    const res = await api.post('/tasks', data, {
+    const res = await api.post('/task', data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return res.data
@@ -42,7 +56,7 @@ export const createTask = async (data: FormData) => {
 
 export const updateTask = async (id: string, data: FormData) => {
   try {
-    const res = await api.put(`/tasks/${id}`, data, {
+    const res = await api.put(`/task/${id}`, data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return res.data
@@ -53,7 +67,7 @@ export const updateTask = async (id: string, data: FormData) => {
 
 export const deleteTask = async (id: string) => {
   try {
-    const res = await api.delete(`/tasks/${id}`)
+    const res = await api.delete(`/task/${id}`)
     return res.data
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to delete task')
@@ -62,7 +76,7 @@ export const deleteTask = async (id: string) => {
 
 export const getCategories = async () => {
   try {
-    const res = await api.get('/categories')
+    const res = await api.get('/category')
     return res.data
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to fetch categories')
@@ -71,7 +85,7 @@ export const getCategories = async () => {
 
 export const updateProfile = async (data: FormData) => {
   try {
-    const res = await api.put('/users/profile', data, {
+    const res = await api.put('/user/profile', data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return res.data

@@ -56,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('user', JSON.stringify(res.data.user))
     } catch (e: any) {
       setError(e.response?.data?.message || 'Login failed')
+      throw e
     } finally {
       setLoading(false)
     }
@@ -72,6 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('user', JSON.stringify(res.data.user))
     } catch (e: any) {
       setError(e.response?.data?.message || 'Registration failed')
+      throw e
     } finally {
       setLoading(false)
     }
@@ -88,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('user', JSON.stringify(res.data.user))
     } catch (e: any) {
       setError(e.response?.data?.message || 'Google sign-in failed')
+      throw e
     } finally {
       setLoading(false)
     }
