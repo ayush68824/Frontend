@@ -36,60 +36,73 @@ api.interceptors.response.use(
 
 export const getTasks = async () => {
   try {
-    const res = await api.get('/tasks')
+    const res = await api.get('/task')
     return res.data
   } catch (error: any) {
+    console.error('Get tasks error:', error.response?.data)
     throw new Error(error.response?.data?.message || 'Failed to fetch tasks')
   }
 }
 
 export const createTask = async (data: FormData) => {
   try {
-    const res = await api.post('/tasks', data, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    // Remove Content-Type header to let browser set it with boundary
+    const res = await api.post('/task', data, {
+      headers: {
+        'Content-Type': undefined
+      }
     })
     return res.data
   } catch (error: any) {
+    console.error('Create task error:', error.response?.data)
     throw new Error(error.response?.data?.message || 'Failed to create task')
   }
 }
 
 export const updateTask = async (id: string, data: FormData) => {
   try {
-    const res = await api.put(`/tasks/${id}`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const res = await api.put(`/task/${id}`, data, {
+      headers: {
+        'Content-Type': undefined
+      }
     })
     return res.data
   } catch (error: any) {
+    console.error('Update task error:', error.response?.data)
     throw new Error(error.response?.data?.message || 'Failed to update task')
   }
 }
 
 export const deleteTask = async (id: string) => {
   try {
-    const res = await api.delete(`/tasks/${id}`)
+    const res = await api.delete(`/task/${id}`)
     return res.data
   } catch (error: any) {
+    console.error('Delete task error:', error.response?.data)
     throw new Error(error.response?.data?.message || 'Failed to delete task')
   }
 }
 
 export const getCategories = async () => {
   try {
-    const res = await api.get('/categories')
+    const res = await api.get('/category')
     return res.data
   } catch (error: any) {
+    console.error('Get categories error:', error.response?.data)
     throw new Error(error.response?.data?.message || 'Failed to fetch categories')
   }
 }
 
 export const updateProfile = async (data: FormData) => {
   try {
-    const res = await api.put('/users/profile', data, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const res = await api.put('/user/profile', data, {
+      headers: {
+        'Content-Type': undefined
+      }
     })
     return res.data
   } catch (error: any) {
+    console.error('Update profile error:', error.response?.data)
     throw new Error(error.response?.data?.message || 'Failed to update profile')
   }
 } 

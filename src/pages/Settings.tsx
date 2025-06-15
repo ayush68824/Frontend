@@ -8,7 +8,7 @@ const Settings: React.FC = () => {
   const [name, setName] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
   const [photo, setPhoto] = useState<File | null>(null)
-  const [photoUrl, setPhotoUrl] = useState<string | null>(user?.photo || null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(user?.photo || null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState('')
   const [error, setLocalError] = useState('')
@@ -18,9 +18,23 @@ const Settings: React.FC = () => {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setLocalError('Image size should be less than 5MB')
+        return
+      }
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        setLocalError('Please upload an image file')
+        return
+      }
       setPhoto(file)
       const reader = new FileReader()
-      reader.onload = ev => setPhotoUrl(ev.target?.result as string)
+      reader.onload = ev => {
+        if (ev.target?.result) {
+          setPhotoPreview(ev.target.result as string)
+        }
+      }
       reader.readAsDataURL(file)
     }
   }
@@ -36,7 +50,7 @@ const Settings: React.FC = () => {
       const formData = new FormData()
       formData.append('name', name.trim())
       formData.append('email', email.trim())
-      if (photo) {
+      if (photo && photo instanceof File) {
         formData.append('photo', photo)
       }
       
@@ -67,7 +81,7 @@ const Settings: React.FC = () => {
         <Stack spacing={3}>
           <Box display="flex" alignItems="center" gap={2}>
             <Avatar
-              src={photoUrl || undefined}
+              src={photoPreview || undefined}
               alt={user.name}
               sx={{ width: 100, height: 100 }}
             />

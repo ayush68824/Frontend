@@ -29,7 +29,6 @@ interface TaskFormProps {
   onSubmit: (data: FormData) => Promise<void>
   loading?: boolean
   submitLabel?: string
-  token?: string | null
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, submitLabel = 'Save' }) => {
@@ -39,8 +38,33 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   const [priority, setPriority] = useState(initial.priority || 'Moderate')
   const [status, setStatus] = useState(initial.status || 'Not Started')
   const [image, setImage] = useState<File | null>(initial.image || null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [titleError, setTitleError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size should be less than 5MB')
+        return
+      }
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file')
+        return
+      }
+      setImage(file)
+      const reader = new FileReader()
+      reader.onload = ev => {
+        if (ev.target?.result) {
+          setImagePreview(ev.target.result as string)
+        }
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,7 +84,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
       }
       formData.append('priority', priority)
       formData.append('status', status)
-      if (image) formData.append('image', image)
+      
+      if (image && image instanceof File) {
+        formData.append('image', image)
+      }
       
       await onSubmit(formData)
     } catch (err: any) {
@@ -154,9 +181,18 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
             type="file" 
             accept="image/*" 
             hidden 
-            onChange={e => setImage(e.target.files?.[0] || null)} 
+            onChange={handleImageChange}
           />
         </Button>
+        {imagePreview && (
+          <Box>
+            <img 
+              src={imagePreview} 
+              alt="Preview" 
+              style={{ maxWidth: '100%', maxHeight: '200px' }} 
+            />
+          </Box>
+        )}
         <Button 
           type="submit" 
           variant="contained" 
