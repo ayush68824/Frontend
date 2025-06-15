@@ -36,7 +36,7 @@ api.interceptors.response.use(
 
 export const getTasks = async () => {
   try {
-    const res = await api.get('/task')
+    const res = await api.get('/tasks')
     return res.data
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to fetch tasks')
@@ -45,7 +45,7 @@ export const getTasks = async () => {
 
 export const createTask = async (data: FormData) => {
   try {
-    const res = await api.post('/task', data, {
+    const res = await api.post('/tasks', data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return res.data
@@ -56,7 +56,7 @@ export const createTask = async (data: FormData) => {
 
 export const updateTask = async (id: string, data: FormData) => {
   try {
-    const res = await api.put(`/task/${id}`, data, {
+    const res = await api.put(`/tasks/${id}`, data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return res.data
@@ -67,7 +67,7 @@ export const updateTask = async (id: string, data: FormData) => {
 
 export const deleteTask = async (id: string) => {
   try {
-    const res = await api.delete(`/task/${id}`)
+    const res = await api.delete(`/tasks/${id}`)
     return res.data
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to delete task')
@@ -76,7 +76,7 @@ export const deleteTask = async (id: string) => {
 
 export const getCategories = async () => {
   try {
-    const res = await api.get('/category')
+    const res = await api.get('/categories')
     return res.data
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to fetch categories')
@@ -85,7 +85,7 @@ export const getCategories = async () => {
 
 export const updateProfile = async (data: FormData) => {
   try {
-    const res = await api.put('/user/profile', data, {
+    const res = await api.put('/users/profile', data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return res.data
