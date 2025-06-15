@@ -1,11 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AuthForm from '../components/AuthForm'
 import { useAuth } from '../context/AuthContext'
-import { CircularProgress, Box, Stack, Divider, Paper, Alert } from '@mui/material'
 import { GoogleLogin } from '@react-oauth/google'
 import type { CredentialResponse } from '@react-oauth/google'
-import { Container, Typography, TextField, Button, Link } from '@mui/material'
+import { 
+  Container, 
+  Paper, 
+  Typography, 
+  TextField, 
+  Button, 
+  Box, 
+  Link,
+  Alert,
+  CircularProgress
+} from '@mui/material'
 import { styled } from '@mui/material/styles'
 
 const StyledPaper = styled(Paper)(({ theme }) => ({

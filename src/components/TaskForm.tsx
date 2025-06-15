@@ -1,15 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Box, Button, TextField, MenuItem, Stack, InputLabel, Select, FormControl } from '@mui/material'
 import type { SelectChangeEvent } from '@mui/material'
-import { getCategories } from '../utils/api'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
 import { format } from 'date-fns'
-
-interface Category {
-  _id: string;
-  name: string;
-}
 
 const priorities = [
   { value: 'High', label: 'High' },
@@ -38,31 +32,14 @@ interface TaskFormProps {
   token?: string | null
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, submitLabel = 'Save', token }) => {
+const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, submitLabel = 'Save' }) => {
   const [title, setTitle] = useState(initial.title || '')
   const [description, setDescription] = useState(initial.description || '')
   const [dueDate, setDueDate] = useState<Date | null>(initial.dueDate ? new Date(initial.dueDate) : null)
   const [priority, setPriority] = useState(initial.priority || 'Moderate')
   const [status, setStatus] = useState(initial.status || 'Not Started')
   const [image, setImage] = useState<File | null>(initial.image || null)
-  const [categories, setCategories] = useState<Category[]>([])
   const [titleError, setTitleError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (token) {
-      getCategories(token)
-        .then(data => {
-          if (data && Array.isArray(data.categories)) {
-            setCategories(data.categories)
-          } else {
-            setTitleError('Failed to load categories')
-          }
-        })
-        .catch(() => {
-          setTitleError('Failed to load categories')
-        })
-    }
-  }, [token])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
