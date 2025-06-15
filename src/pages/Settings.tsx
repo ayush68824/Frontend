@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { Box, Typography, TextField, Button, Avatar, CircularProgress, Alert, Stack } from '@mui/material'
-import axios from 'axios'
-
-const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
+import { updateProfile } from '../utils/api'
 
 const Settings: React.FC = () => {
   const { user, token, setError } = useAuth()
@@ -40,15 +38,10 @@ const Settings: React.FC = () => {
         formData.append('photo', photo)
       }
       
-      const response = await axios.put(`${API_URL}/users/me`, formData, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        },
-      })
+      const response = await updateProfile(token, formData)
       
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user))
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user))
         setSuccess('Profile updated successfully!')
       }
     } catch (e: any) {
@@ -61,56 +54,50 @@ const Settings: React.FC = () => {
   }
 
   return (
-    <Box maxWidth={400} mx="auto" mt={4} p={3} boxShadow={3} borderRadius={2} bgcolor="#fff" sx={{ transition: 'box-shadow 0.2s', minWidth: { xs: '90vw', sm: 400 } }}>
-      <Typography variant="h5" mb={2}>Settings</Typography>
+    <Box maxWidth={600} mx="auto" p={4}>
+      <Typography variant="h4" gutterBottom>Settings</Typography>
       <form onSubmit={handleSubmit}>
-        <Stack spacing={2}>
-          <TextField 
-            label="Name" 
-            value={name} 
-            onChange={e => setName(e.target.value)} 
-            fullWidth 
-            required 
-            variant="outlined" 
-            helperText="Update your display name" 
-          />
-          <TextField 
-            label="Email" 
-            value={email} 
-            onChange={e => setEmail(e.target.value)} 
-            fullWidth 
-            required 
-            variant="outlined" 
-            helperText="Update your email address" 
-          />
+        <Stack spacing={3}>
           <Box display="flex" alignItems="center" gap={2}>
+            <Avatar
+              src={photoUrl || undefined}
+              alt={user.name}
+              sx={{ width: 100, height: 100 }}
+            />
             <Button variant="outlined" component="label">
-              {photoUrl ? 'Change Photo' : 'Upload Photo'}
-              <input 
-                type="file" 
-                accept="image/*" 
-                hidden 
-                onChange={handlePhotoChange} 
+              Change Photo
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handlePhotoChange}
               />
             </Button>
-            {photoUrl && (
-              <Avatar 
-                src={photoUrl} 
-                alt="User Photo" 
-                sx={{ width: 64, height: 64 }}
-              />
-            )}
           </Box>
-          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary" 
-            disabled={loading} 
-            sx={{ transition: 'all 0.2s' }}
+          <TextField
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+            required
+          />
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            fullWidth
+            required
+          />
+          {success && <Alert severity="success">{success}</Alert>}
+          {error && <Alert severity="error">{error}</Alert>}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loading}
           >
-            {loading ? <CircularProgress size={20} /> : 'Update'}
+            {loading ? <CircularProgress size={24} /> : 'Update Profile'}
           </Button>
         </Stack>
       </form>

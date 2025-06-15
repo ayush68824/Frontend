@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import axios from 'axios'
 
-const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com'
+const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
 
 interface User {
   _id: string
@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.post(`${API_URL}/api/auth/login`, { email, password })
+      const res = await axios.post(`${API_URL}/auth/login`, { email, password })
       setToken(res.data.token)
       setUser(res.data.user)
       localStorage.setItem('token', res.data.token)
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.post(`${API_URL}/api/auth/register`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const res = await axios.post(`${API_URL}/auth/register`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
       setToken(res.data.token)
       setUser(res.data.user)
       localStorage.setItem('token', res.data.token)
@@ -81,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.post(`${API_URL}/api/auth/google`, { token: googleToken })
+      const res = await axios.post(`${API_URL}/auth/google`, { token: googleToken })
       setToken(res.data.token)
       setUser(res.data.user)
       localStorage.setItem('token', res.data.token)

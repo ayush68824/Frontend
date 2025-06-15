@@ -41,4 +41,14 @@ export const getCategories = async (token: string) => {
     headers: { Authorization: `Bearer ${token}` },
   })
   return res.data
+}
+
+export const updateProfile = async (token: string, data: FormData) => {
+  const res = await axios.put(`${API_URL}/users/profile`, data, {
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    },
+  })
+  return res.data
 } 
