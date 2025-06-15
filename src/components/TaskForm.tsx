@@ -1,21 +1,23 @@
 import React, { useState } from 'react'
-import { Box, Button, TextField, MenuItem, Stack, InputLabel, Select, FormControl, Alert } from '@mui/material'
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  TextField, 
+  Button, 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem, 
+  Box,
+  Typography,
+  Alert,
+  CircularProgress
+} from '@mui/material'
 import type { SelectChangeEvent } from '@mui/material'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
+import { DatePicker } from '@mui/x-date-pickers'
 import { format } from 'date-fns'
-
-const priorities = [
-  { value: 'High', label: 'High' },
-  { value: 'Moderate', label: 'Moderate' },
-  { value: 'Low', label: 'Low' },
-]
-
-const statuses = [
-  { value: 'Not Started', label: 'Not Started' },
-  { value: 'In Progress', label: 'In Progress' },
-  { value: 'Completed', label: 'Completed' },
-]
 
 interface TaskFormProps {
   initial?: {
@@ -24,7 +26,7 @@ interface TaskFormProps {
     dueDate?: string
     priority?: string
     status?: string
-    image?: File | null
+    image?: string
   }
   onSubmit: (data: FormData) => Promise<void>
   loading?: boolean
@@ -37,8 +39,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   const [dueDate, setDueDate] = useState<Date | null>(initial.dueDate ? new Date(initial.dueDate) : null)
   const [priority, setPriority] = useState(initial.priority || 'Moderate')
   const [status, setStatus] = useState(initial.status || 'Not Started')
-  const [image, setImage] = useState<File | null>(initial.image || null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [image, setImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(initial.image || null)
   const [titleError, setTitleError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -115,105 +117,109 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   }
 
   return (
-    <Box component="form" onSubmit={handleSubmit} p={2}>
-      <Stack spacing={2}>
-        {error && <Alert severity="error">{error}</Alert>}
-        <TextField 
-          label="Title" 
-          value={title} 
-          onChange={e => {
+    <form onSubmit={handleSubmit}>
+      <DialogContent>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        
+        <TextField
+          fullWidth
+          label="Title"
+          value={title}
+          onChange={(e) => {
             setTitle(e.target.value)
             setTitleError(null)
           }}
-          required 
-          fullWidth 
-          variant="outlined" 
           error={!!titleError}
           helperText={titleError}
+          margin="normal"
+          required
         />
-        <TextField 
-          label="Description" 
-          value={description} 
-          onChange={e => setDescription(e.target.value)} 
-          multiline 
-          rows={3} 
-          fullWidth 
-          variant="outlined" 
-          helperText="Describe the task details" 
+        
+        <TextField
+          fullWidth
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          margin="normal"
+          multiline
+          rows={4}
         />
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
+        
+        <Box sx={{ mt: 2, mb: 2 }}>
           <DatePicker
             label="Due Date"
             value={dueDate}
             onChange={(newValue) => setDueDate(newValue)}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-                variant: 'outlined',
-                helperText: 'Set a due date (optional)'
-              }
-            }}
+            slotProps={{ textField: { fullWidth: true } }}
           />
-        </LocalizationProvider>
-        <FormControl fullWidth>
+        </Box>
+        
+        <FormControl fullWidth margin="normal">
           <InputLabel>Priority</InputLabel>
-          <Select 
-            value={priority} 
-            label="Priority" 
+          <Select
+            value={priority}
+            label="Priority"
             onChange={handlePriorityChange}
-            variant="outlined"
           >
-            {priorities.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-            ))}
+            <MenuItem value="High">High</MenuItem>
+            <MenuItem value="Moderate">Moderate</MenuItem>
+            <MenuItem value="Low">Low</MenuItem>
           </Select>
         </FormControl>
-        <FormControl fullWidth>
+        
+        <FormControl fullWidth margin="normal">
           <InputLabel>Status</InputLabel>
-          <Select 
-            value={status} 
-            label="Status" 
+          <Select
+            value={status}
+            label="Status"
             onChange={handleStatusChange}
-            variant="outlined"
           >
-            {statuses.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-            ))}
+            <MenuItem value="Not Started">Not Started</MenuItem>
+            <MenuItem value="In Progress">In Progress</MenuItem>
+            <MenuItem value="Completed">Completed</MenuItem>
           </Select>
         </FormControl>
-        <Button 
-          variant="outlined" 
-          component="label"
-          fullWidth
-        >
-          {image ? 'Change Image' : 'Upload Image'}
-          <input 
-            type="file" 
-            accept="image/*" 
-            hidden 
+        
+        <Box sx={{ mt: 2 }}>
+          <input
+            accept="image/*"
+            type="file"
+            id="image-upload"
             onChange={handleImageChange}
+            style={{ display: 'none' }}
           />
-        </Button>
-        {imagePreview && (
-          <Box>
-            <img 
-              src={imagePreview} 
-              alt="Preview" 
-              style={{ maxWidth: '100%', maxHeight: '200px' }} 
-            />
-          </Box>
-        )}
+          <label htmlFor="image-upload">
+            <Button
+              variant="outlined"
+              component="span"
+              fullWidth
+            >
+              Upload Image
+            </Button>
+          </label>
+          {imagePreview && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                style={{ maxWidth: '100%', maxHeight: '200px' }} 
+              />
+            </Box>
+          )}
+        </Box>
+      </DialogContent>
+      
+      <DialogActions>
         <Button 
           type="submit" 
           variant="contained" 
-          color="primary" 
           disabled={loading}
-          fullWidth
+          startIcon={loading ? <CircularProgress size={20} /> : null}
         >
-          {loading ? 'Saving...' : submitLabel}
+          {submitLabel}
         </Button>
-      </Stack>
-    </Box>
+      </DialogActions>
+    </form>
   )
 }
 

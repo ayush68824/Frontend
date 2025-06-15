@@ -85,30 +85,4 @@ export const deleteTask = async (id: string) => {
     const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to delete task'
     throw new Error(errorMessage)
   }
-}
-
-export const getCategories = async () => {
-  try {
-    const res = await api.get('/categories')
-    return res.data
-  } catch (error: any) {
-    console.error('Get categories error:', error.response?.data)
-    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to fetch categories'
-    throw new Error(errorMessage)
-  }
-}
-
-export const updateProfile = async (data: FormData) => {
-  try {
-    const res = await api.put('/users/profile', data, {
-      headers: {
-        'Content-Type': undefined
-      }
-    })
-    return res.data
-  } catch (error: any) {
-    console.error('Update profile error:', error.response?.data)
-    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to update profile'
-    throw new Error(errorMessage)
-  }
 } 

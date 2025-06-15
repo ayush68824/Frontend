@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getTasks, createTask, updateTask, deleteTask, getCategories } from '../utils/api'
+import { getTasks, createTask, updateTask, deleteTask } from '../utils/api'
 import { CircularProgress, Typography, Box, List, ListItem, ListItemText, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Checkbox, MenuItem, Select, FormControl, InputLabel, TextField, Stack, Chip } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
@@ -14,7 +14,6 @@ interface Task {
   status: string
   priority: string
   dueDate?: string
-  category?: string
   image?: string
 }
 
@@ -29,7 +28,6 @@ const sortOptions = [
 const Dashboard: React.FC = () => {
   const { token, user } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
-  const [categories, setCategories] = useState<{_id: string, name: string}[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
@@ -41,7 +39,6 @@ const Dashboard: React.FC = () => {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState('All')
   const [priorityFilter, setPriorityFilter] = useState('All')
-  const [categoryFilter, setCategoryFilter] = useState('All')
   const [sortBy, setSortBy] = useState('dueDate')
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
@@ -55,21 +52,12 @@ const Dashboard: React.FC = () => {
       .finally(() => setLoading(false))
   }
 
-  const fetchCategories = () => {
-    if (!token) return
-    getCategories()
-      .then(data => setCategories(data.categories || data))
-      .catch(() => setCategories([]))
-  }
-
   useEffect(() => {
     if (!token) {
       navigate('/login')
       return
     }
     fetchTasks()
-    fetchCategories()
-    // eslint-disable-next-line
   }, [token, navigate])
 
   const handleCreateTask = async (formData: FormData) => {
@@ -141,135 +129,194 @@ const Dashboard: React.FC = () => {
     } catch {}
   }
 
-  const filteredSortedTasks = useMemo(() => {
-    let filtered = tasks
-    if (statusFilter !== 'All') filtered = filtered.filter(t => t.status === statusFilter)
-    if (priorityFilter !== 'All') filtered = filtered.filter(t => t.priority === priorityFilter)
-    if (categoryFilter !== 'All') filtered = filtered.filter(t => t.category === categoryFilter)
-    if (search.trim()) {
-      const s = search.trim().toLowerCase()
-      filtered = filtered.filter(t => t.title.toLowerCase().includes(s) || t.description.toLowerCase().includes(s))
-    }
-    if (sortBy === 'dueDate') {
-      filtered = [...filtered].sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''))
-    } else if (sortBy === 'priority') {
-      const order: Record<string, number> = { High: 1, Moderate: 2, Low: 3 }
-      filtered = [...filtered].sort((a, b) => (order[a.priority] || 4) - (order[b.priority] || 4))
-    } else if (sortBy === 'title') {
-      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title))
-    }
-    return filtered
-  }, [tasks, statusFilter, priorityFilter, categoryFilter, sortBy, search])
+  const filteredTasks = tasks.filter(task => {
+    const matchesStatus = statusFilter === 'All' || task.status === statusFilter
+    const matchesPriority = priorityFilter === 'All' || task.priority === priorityFilter
+    const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase()) ||
+                         task.description.toLowerCase().includes(search.toLowerCase())
+    return matchesStatus && matchesPriority && matchesSearch
+  })
 
-  const categoryMap = useMemo(() => Object.fromEntries(categories.map(c => [c._id, c.name])), [categories])
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    switch (sortBy) {
+      case 'dueDate':
+        if (!a.dueDate) return 1
+        if (!b.dueDate) return -1
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+      case 'priority':
+        const priorityOrder = { High: 0, Moderate: 1, Low: 2 }
+        return priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder]
+      case 'title':
+        return a.title.localeCompare(b.title)
+      default:
+        return 0
+    }
+  })
 
   if (!user) return null
 
   return (
-    <Box maxWidth={800} mx="auto" mt={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Welcome, {user.name}</Typography>
-      </Box>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={2}>
+    <Box p={3}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h4">Tasks</Typography>
+        <Button 
+          variant="contained" 
+          onClick={() => {
+            setEditTask(null)
+            setOpen(true)
+          }}
+        >
+          Create Task
+        </Button>
+      </Stack>
+
+      <Stack direction="row" spacing={2} mb={3}>
         <FormControl sx={{ minWidth: 120 }}>
           <InputLabel>Status</InputLabel>
-          <Select value={statusFilter} label="Status" onChange={e => setStatusFilter(e.target.value)}>
-            {statusOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+          <Select
+            value={statusFilter}
+            label="Status"
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            {statusOptions.map(option => (
+              <MenuItem key={option} value={option}>{option}</MenuItem>
+            ))}
           </Select>
         </FormControl>
+
         <FormControl sx={{ minWidth: 120 }}>
           <InputLabel>Priority</InputLabel>
-          <Select value={priorityFilter} label="Priority" onChange={e => setPriorityFilter(e.target.value)}>
-            {priorityOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+          <Select
+            value={priorityFilter}
+            label="Priority"
+            onChange={(e) => setPriorityFilter(e.target.value)}
+          >
+            {priorityOptions.map(option => (
+              <MenuItem key={option} value={option}>{option}</MenuItem>
+            ))}
           </Select>
         </FormControl>
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel>Category</InputLabel>
-          <Select value={categoryFilter} label="Category" onChange={e => setCategoryFilter(e.target.value)}>
-            <MenuItem value="All">All</MenuItem>
-            {categories.map(cat => <MenuItem key={cat._id} value={cat._id}>{cat.name}</MenuItem>)}
-          </Select>
-        </FormControl>
+
         <FormControl sx={{ minWidth: 120 }}>
           <InputLabel>Sort By</InputLabel>
-          <Select value={sortBy} label="Sort By" onChange={e => setSortBy(e.target.value)}>
-            {sortOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+          <Select
+            value={sortBy}
+            label="Sort By"
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            {sortOptions.map(option => (
+              <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+            ))}
           </Select>
         </FormControl>
-        <TextField label="Search" value={search} onChange={e => setSearch(e.target.value)} fullWidth />
+
+        <TextField
+          label="Search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ flexGrow: 1 }}
+        />
       </Stack>
-      <Button 
-        variant="contained" 
-        color="primary" 
-        onClick={() => setOpen(true)} 
-        sx={{ mb: 2 }}
-      >
-        Add Task
-      </Button>
-      {loading && <CircularProgress />}
-      {error && <Alert severity="error">{error}</Alert>}
-      <List>
-        {filteredSortedTasks.map(task => (
-          <ListItem key={task._id} divider secondaryAction={
-            <>
-              <IconButton edge="end" aria-label="edit" onClick={() => handleEditTask(task)}><EditIcon /></IconButton>
-              <IconButton edge="end" aria-label="delete" onClick={() => setDeleteId(task._id)}><DeleteIcon /></IconButton>
-            </>
-          } alignItems="flex-start">
-            <Checkbox
-              edge="start"
-              checked={task.status === 'Completed'}
-              onChange={() => handleStatusToggle(task)}
-              tabIndex={-1}
-              disableRipple
-              sx={{ mt: 1 }}
-            />
-            <ListItemText
-              primary={
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }}>
-                  <Typography variant="subtitle1" fontWeight={600}>{task.title}</Typography>
-                  <Chip label={task.status} color={task.status === 'Completed' ? 'success' : task.status === 'In Progress' ? 'warning' : 'default'} size="small" sx={{ ml: 1 }} />
-                  <Chip label={task.priority} color={task.priority === 'High' ? 'error' : task.priority === 'Moderate' ? 'warning' : 'info'} size="small" sx={{ ml: 1 }} />
-                  {task.category && <Chip label={categoryMap[task.category] || ''} color="primary" size="small" sx={{ ml: 1 }} />}
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {createError && <Alert severity="error" sx={{ mb: 2 }}>{createError}</Alert>}
+      {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
+
+      {loading ? (
+        <Box display="flex" justifyContent="center" p={3}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <List>
+          {sortedTasks.map(task => (
+            <ListItem
+              key={task._id}
+              sx={{
+                bgcolor: 'background.paper',
+                mb: 1,
+                borderRadius: 1,
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+              }}
+              secondaryAction={
+                <Stack direction="row" spacing={1}>
+                  <IconButton edge="end" onClick={() => handleEditTask(task)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton edge="end" onClick={() => setDeleteId(task._id)}>
+                    <DeleteIcon />
+                  </IconButton>
                 </Stack>
               }
-              secondary={
-                <>
-                  <Typography variant="body2" color="text.secondary">{task.description}</Typography>
-                  <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
-                    {task.dueDate && <Chip label={`Due: ${task.dueDate}`} size="small" />}
-                    {task.image && <img src={task.image} alt="task" style={{ width: 32, height: 32, borderRadius: 4, marginLeft: 8 }} />}
+            >
+              <ListItemText
+                primary={
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Checkbox
+                      checked={task.status === 'Completed'}
+                      onChange={() => handleStatusToggle(task)}
+                    />
+                    <Typography
+                      sx={{
+                        textDecoration: task.status === 'Completed' ? 'line-through' : 'none',
+                        color: task.status === 'Completed' ? 'text.secondary' : 'text.primary',
+                      }}
+                    >
+                      {task.title}
+                    </Typography>
+                    <Chip
+                      label={task.priority}
+                      size="small"
+                      color={
+                        task.priority === 'High' ? 'error' :
+                        task.priority === 'Moderate' ? 'warning' : 'success'
+                      }
+                    />
+                    <Chip
+                      label={task.status}
+                      size="small"
+                      color={
+                        task.status === 'Completed' ? 'success' :
+                        task.status === 'In Progress' ? 'warning' : 'default'
+                      }
+                    />
                   </Stack>
-                </>
-              }
-            />
-          </ListItem>
-        ))}
-      </List>
-      <Dialog open={open} onClose={() => { setOpen(false); setEditTask(null); }} maxWidth="sm" fullWidth>
-        <DialogTitle>{editTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
-        <DialogContent>
-          <TaskForm
-            initial={editTask ? {
-              title: editTask.title,
-              description: editTask.description,
-              dueDate: editTask.dueDate,
-              priority: editTask.priority,
-              status: editTask.status,
-              image: null // We don't pass the image URL as it's not a File
-            } : undefined}
-            onSubmit={editTask ? handleUpdateTask : handleCreateTask}
-            loading={createLoading}
-            submitLabel={editTask ? 'Update' : 'Create'}
-          />
-          {createError && <Alert severity="error">{createError}</Alert>}
-        </DialogContent>
+                }
+                secondary={
+                  <Stack direction="row" spacing={1} mt={0.5}>
+                    {task.dueDate && (
+                      <Typography variant="body2" color="text.secondary">
+                        Due: {new Date(task.dueDate).toLocaleDateString()}
+                      </Typography>
+                    )}
+                    {task.description && (
+                      <Typography variant="body2" color="text.secondary">
+                        {task.description}
+                      </Typography>
+                    )}
+                  </Stack>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
+
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{editTask ? 'Edit Task' : 'Create Task'}</DialogTitle>
+        <TaskForm
+          initial={editTask || {}}
+          onSubmit={editTask ? handleUpdateTask : handleCreateTask}
+          loading={createLoading}
+          submitLabel={editTask ? 'Update' : 'Create'}
+        />
       </Dialog>
+
       <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
         <DialogTitle>Delete Task</DialogTitle>
         <DialogContent>
           <Typography>Are you sure you want to delete this task?</Typography>
-          {deleteError && <Alert severity="error">{deleteError}</Alert>}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteId(null)}>Cancel</Button>
@@ -278,7 +325,7 @@ const Dashboard: React.FC = () => {
             color="error" 
             disabled={deleteLoading}
           >
-            {deleteLoading ? <CircularProgress size={24} /> : 'Delete'}
+            {deleteLoading ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>
