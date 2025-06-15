@@ -21,8 +21,8 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const { register, googleSignIn, user } = useAuth()
   const navigate = useNavigate()
 
@@ -32,6 +32,8 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError('')
     try {
       const formData = new FormData()
       formData.append('name', name)
@@ -44,6 +46,8 @@ const Register: React.FC = () => {
       navigate('/dashboard')
     } catch (err) {
       setError('Registration failed')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -54,6 +58,8 @@ const Register: React.FC = () => {
   }
 
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsLoading(true)
+    setError('')
     try {
       if (credentialResponse.credential) {
         await googleSignIn(credentialResponse.credential)
@@ -61,12 +67,20 @@ const Register: React.FC = () => {
       }
     } catch (err) {
       setError('Google sign-up failed')
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  return loading ? (
-    <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 8 }} />
-  ) : (
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    )
+  }
+
+  return (
     <Container maxWidth="sm">
       <StyledPaper elevation={3}>
         <Typography variant="h4" component="h1" gutterBottom>
@@ -81,6 +95,7 @@ const Register: React.FC = () => {
             onChange={(e) => setName(e.target.value)}
             margin="normal"
             required
+            disabled={isLoading}
           />
           <TextField
             fullWidth
@@ -90,6 +105,7 @@ const Register: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             margin="normal"
             required
+            disabled={isLoading}
           />
           <TextField
             fullWidth
@@ -99,19 +115,22 @@ const Register: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             margin="normal"
             required
+            disabled={isLoading}
           />
           <Button
             variant="outlined"
             component="label"
             fullWidth
             sx={{ mt: 2 }}
+            disabled={isLoading}
           >
-            Upload Photo
+            {photo ? 'Change Photo' : 'Upload Photo'}
             <input
               type="file"
               hidden
               accept="image/*"
               onChange={handlePhotoChange}
+              disabled={isLoading}
             />
           </Button>
           <Button
@@ -120,8 +139,9 @@ const Register: React.FC = () => {
             color="primary"
             fullWidth
             sx={{ mt: 2 }}
+            disabled={isLoading}
           >
-            Register
+            {isLoading ? 'Registering...' : 'Register'}
           </Button>
         </form>
         <Box sx={{ mt: 2, textAlign: 'center' }}>

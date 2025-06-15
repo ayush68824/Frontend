@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Box, Button, TextField, MenuItem, Stack, InputLabel, Select, FormControl } from '@mui/material'
+import type { SelectChangeEvent } from '@mui/material'
 import { getCategories } from '../utils/api'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
@@ -83,6 +84,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
     onSubmit(formData)
   }
 
+  const handlePriorityChange = (event: SelectChangeEvent) => {
+    setPriority(event.target.value)
+  }
+
+  const handleStatusChange = (event: SelectChangeEvent) => {
+    setStatus(event.target.value)
+  }
+
   return (
     <Box component="form" onSubmit={handleSubmit} p={2}>
       <Stack spacing={2}>
@@ -125,7 +134,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
           <Select 
             value={priority} 
             label="Priority" 
-            onChange={e => setPriority(e.target.value)}
+            onChange={handlePriorityChange}
             variant="outlined"
           >
             {priorities.map(opt => (
@@ -138,7 +147,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
           <Select 
             value={status} 
             label="Status" 
-            onChange={e => setStatus(e.target.value)}
+            onChange={handleStatusChange}
             variant="outlined"
           >
             {statuses.map(opt => (

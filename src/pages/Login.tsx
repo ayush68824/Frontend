@@ -19,6 +19,7 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const { login, googleSignIn, user } = useAuth()
   const navigate = useNavigate()
 
@@ -30,15 +31,21 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError('')
     try {
       await login(email, password)
       navigate('/dashboard')
     } catch (err) {
       setError('Invalid email or password')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    setIsLoading(true)
+    setError('')
     try {
       if (credentialResponse.credential) {
         await googleSignIn(credentialResponse.credential)
@@ -46,7 +53,17 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       setError('Google login failed')
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    )
   }
 
   return (
@@ -65,6 +82,7 @@ const Login: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             margin="normal"
             required
+            disabled={isLoading}
           />
           <TextField
             fullWidth
@@ -74,6 +92,7 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             margin="normal"
             required
+            disabled={isLoading}
           />
           <Button
             type="submit"
@@ -81,8 +100,9 @@ const Login: React.FC = () => {
             color="primary"
             fullWidth
             sx={{ mt: 2 }}
+            disabled={isLoading}
           >
-            Login
+            {isLoading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
         <Box sx={{ mt: 2, textAlign: 'center' }}>
