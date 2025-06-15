@@ -43,9 +43,13 @@ const Settings: React.FC = () => {
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user))
         setSuccess('Profile updated successfully!')
+        // Update the user in the auth context
+        window.location.reload() // Reload to update the user context
+      } else {
+        setLocalError('Failed to update profile: Invalid response from server')
       }
     } catch (e: any) {
-      const errorMessage = e.response?.data?.message || 'Update failed'
+      const errorMessage = e.message || 'Update failed'
       setLocalError(errorMessage)
       setError(errorMessage)
     } finally {

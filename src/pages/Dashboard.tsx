@@ -77,11 +77,15 @@ const Dashboard: React.FC = () => {
     setCreateLoading(true)
     setCreateError(null)
     try {
-      await createTask(token, formData)
-      setOpen(false)
-      fetchTasks()
+      const response = await createTask(token, formData)
+      if (response.task) {
+        setOpen(false)
+        fetchTasks()
+      } else {
+        setCreateError('Failed to create task: Invalid response from server')
+      }
     } catch (e: any) {
-      setCreateError(e.response?.data?.message || 'Failed to create task')
+      setCreateError(e.message || 'Failed to create task')
     } finally {
       setCreateLoading(false)
     }
@@ -97,12 +101,16 @@ const Dashboard: React.FC = () => {
     setCreateLoading(true)
     setCreateError(null)
     try {
-      await updateTask(token, editTask._id, formData)
-      setOpen(false)
-      setEditTask(null)
-      fetchTasks()
+      const response = await updateTask(token, editTask._id, formData)
+      if (response.task) {
+        setOpen(false)
+        setEditTask(null)
+        fetchTasks()
+      } else {
+        setCreateError('Failed to update task: Invalid response from server')
+      }
     } catch (e: any) {
-      setCreateError(e.response?.data?.message || 'Failed to update task')
+      setCreateError(e.message || 'Failed to update task')
     } finally {
       setCreateLoading(false)
     }

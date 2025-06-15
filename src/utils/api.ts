@@ -2,53 +2,79 @@ import axios from 'axios'
 
 const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
 
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Add request interceptor to add token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 export const getTasks = async (token: string) => {
-  const res = await axios.get(`${API_URL}/tasks`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return res.data
+  try {
+    const res = await api.get('/tasks')
+    return res.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch tasks')
+  }
 }
 
 export const createTask = async (token: string, data: FormData) => {
-  const res = await axios.post(`${API_URL}/tasks`, data, {
-    headers: { 
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data'
-    },
-  })
-  return res.data
+  try {
+    const res = await api.post('/tasks', data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return res.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to create task')
+  }
 }
 
 export const updateTask = async (token: string, id: string, data: FormData) => {
-  const res = await axios.put(`${API_URL}/tasks/${id}`, data, {
-    headers: { 
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data'
-    },
-  })
-  return res.data
+  try {
+    const res = await api.put(`/tasks/${id}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return res.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to update task')
+  }
 }
 
 export const deleteTask = async (token: string, id: string) => {
-  const res = await axios.delete(`${API_URL}/tasks/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return res.data
+  try {
+    const res = await api.delete(`/tasks/${id}`)
+    return res.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to delete task')
+  }
 }
 
 export const getCategories = async (token: string) => {
-  const res = await axios.get(`${API_URL}/categories`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return res.data
+  try {
+    const res = await api.get('/categories')
+    return res.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch categories')
+  }
 }
 
 export const updateProfile = async (token: string, data: FormData) => {
-  const res = await axios.put(`${API_URL}/users/profile`, data, {
-    headers: { 
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data'
-    },
-  })
-  return res.data
+  try {
+    const res = await api.put('/users/profile', data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return res.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to update profile')
+  }
 } 
