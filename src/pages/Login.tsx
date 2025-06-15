@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthForm from '../components/AuthForm'
 import { useAuth } from '../context/AuthContext'
-import { CircularProgress, Box, Stack, Divider, Paper } from '@mui/material'
+import { CircularProgress, Box, Stack, Paper, Button } from '@mui/material'
 import { GoogleLogin } from '@react-oauth/google'
 
 const Login: React.FC = () => {
@@ -18,11 +18,6 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await login(email, password)
-  }
-
-  const handleGoogle = async () => {
-    // TODO: Integrate Google OAuth. For now, just show a message.
-    setError('Google sign-in not implemented yet')
   }
 
   return loading ? (
@@ -43,7 +38,6 @@ const Login: React.FC = () => {
             googleLabel="Sign in with Google"
             onGoogle={() => {}}
           />
-          <Divider>or</Divider>
           <Box display="flex" justifyContent="center">
             <GoogleLogin
               onSuccess={async (credentialResponse) => {
@@ -58,6 +52,12 @@ const Login: React.FC = () => {
             />
           </Box>
         </Stack>
+        <Box display="flex" justifyContent="center" mt={2}>
+          <span>Don't have an account?</span>
+          <Button variant="text" onClick={() => navigate('/register')} sx={{ ml: 1 }}>
+            Sign Up
+          </Button>
+        </Box>
       </Paper>
     </Box>
   )

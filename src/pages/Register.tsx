@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthForm from '../components/AuthForm'
 import { useAuth } from '../context/AuthContext'
-import { CircularProgress, Box, Stack, Divider, Paper } from '@mui/material'
+import { CircularProgress, Box, Stack, Divider, Paper, Alert } from '@mui/material'
+import { GoogleLogin } from '@react-oauth/google'
 
 const Register: React.FC = () => {
   const { register, googleSignIn, loading, error, setError, user } = useAuth()
@@ -68,8 +69,19 @@ const Register: React.FC = () => {
           />
           <Divider>or</Divider>
           <Box display="flex" justifyContent="center">
-            {/* GoogleLogin can be added here if needed */}
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                if (credentialResponse.credential) {
+                  await googleSignIn(credentialResponse.credential)
+                } else {
+                  setError('Google sign-up failed')
+                }
+              }}
+              onError={() => setError('Google sign-up failed')}
+              width="100%"
+            />
           </Box>
+          {error && <Box mt={2}><Alert severity="error">{error}</Alert></Box>}
         </Stack>
       </Paper>
     </Box>

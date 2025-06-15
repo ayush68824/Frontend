@@ -1,13 +1,11 @@
 import React from 'react'
-import { Drawer, Box, Avatar, Typography, List, ListItem, ListItemIcon, ListItemText, Divider, Button, ListSubheader, useTheme, useMediaQuery, ListItemButton } from '@mui/material'
+import { Drawer, Box, Avatar, Typography, List, ListItem, ListItemIcon, ListItemText, Divider, Button, useTheme, useMediaQuery, ListItemButton } from '@mui/material'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import ListAltIcon from '@mui/icons-material/ListAlt'
-import CategoryIcon from '@mui/icons-material/Category'
 import SettingsIcon from '@mui/icons-material/Settings'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { getCategories } from '../utils/api'
 
 const navItems = [
   { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
@@ -21,13 +19,6 @@ const Sidebar: React.FC = () => {
   const location = useLocation()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-  const [categories, setCategories] = React.useState<{_id: string, name: string}[]>([])
-
-  React.useEffect(() => {
-    if (token) {
-      getCategories(token).then(data => setCategories(data.categories || data)).catch(() => setCategories([]))
-    }
-  }, [token])
 
   const drawerContent = (
     <Box display="flex" flexDirection="column" height="100%">

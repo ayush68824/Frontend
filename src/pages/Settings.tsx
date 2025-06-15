@@ -19,8 +19,8 @@ const Settings: React.FC = () => {
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    setPhoto(file || null)
     if (file) {
+      setPhoto(file)
       const reader = new FileReader()
       reader.onload = ev => setPhotoUrl(ev.target?.result as string)
       reader.readAsDataURL(file)
@@ -36,14 +36,25 @@ const Settings: React.FC = () => {
       const formData = new FormData()
       formData.append('name', name)
       formData.append('email', email)
-      if (photo) formData.append('photo', photo)
-      await axios.put(`${API_URL}/users/me`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
+      if (photo) {
+        formData.append('photo', photo)
+      }
+      
+      const response = await axios.put(`${API_URL}/users/me`, formData, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
       })
-      setSuccess('Profile updated successfully!')
+      
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        setSuccess('Profile updated successfully!')
+      }
     } catch (e: any) {
-      setLocalError(e.response?.data?.message || 'Update failed')
-      setError(e.response?.data?.message || 'Update failed')
+      const errorMessage = e.response?.data?.message || 'Update failed'
+      setLocalError(errorMessage)
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -54,18 +65,51 @@ const Settings: React.FC = () => {
       <Typography variant="h5" mb={2}>Settings</Typography>
       <form onSubmit={handleSubmit}>
         <Stack spacing={2}>
-          <TextField label="Name" value={name} onChange={e => setName(e.target.value)} fullWidth required variant="outlined" helperText="Update your display name" />
-          <TextField label="Email" value={email} onChange={e => setEmail(e.target.value)} fullWidth required variant="outlined" helperText="Update your email address" />
+          <TextField 
+            label="Name" 
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+            fullWidth 
+            required 
+            variant="outlined" 
+            helperText="Update your display name" 
+          />
+          <TextField 
+            label="Email" 
+            value={email} 
+            onChange={e => setEmail(e.target.value)} 
+            fullWidth 
+            required 
+            variant="outlined" 
+            helperText="Update your email address" 
+          />
           <Box display="flex" alignItems="center" gap={2}>
             <Button variant="outlined" component="label">
               {photoUrl ? 'Change Photo' : 'Upload Photo'}
-              <input type="file" accept="image/*" hidden onChange={handlePhotoChange} />
+              <input 
+                type="file" 
+                accept="image/*" 
+                hidden 
+                onChange={handlePhotoChange} 
+              />
             </Button>
-            {photoUrl && <Avatar src={photoUrl} alt="User Photo" />}
+            {photoUrl && (
+              <Avatar 
+                src={photoUrl} 
+                alt="User Photo" 
+                sx={{ width: 64, height: 64 }}
+              />
+            )}
           </Box>
-          {error && <Alert severity="error">{error}</Alert>}
-          {success && <Alert severity="success">{success}</Alert>}
-          <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ transition: 'all 0.2s' }}>
+          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
+          <Button 
+            type="submit" 
+            variant="contained" 
+            color="primary" 
+            disabled={loading} 
+            sx={{ transition: 'all 0.2s' }}
+          >
             {loading ? <CircularProgress size={20} /> : 'Update'}
           </Button>
         </Stack>

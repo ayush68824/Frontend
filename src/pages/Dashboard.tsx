@@ -15,6 +15,7 @@ interface Task {
   priority: string
   dueDate?: string
   category?: string
+  image?: string
 }
 
 const statusOptions = ['All', 'Not Started', 'In Progress', 'Completed']
@@ -26,7 +27,7 @@ const sortOptions = [
 ]
 
 const Dashboard: React.FC = () => {
-  const { token, user, logout } = useAuth()
+  const { token, user } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
   const [categories, setCategories] = useState<{_id: string, name: string}[]>([])
   const [loading, setLoading] = useState(false)
@@ -125,7 +126,9 @@ const Dashboard: React.FC = () => {
   const handleStatusToggle = async (task: Task) => {
     if (!token) return
     try {
-      await updateTask(token, task._id, { status: task.status === 'Completed' ? 'Not Started' : 'Completed' })
+      const formData = new FormData()
+      formData.append('status', task.status === 'Completed' ? 'Not Started' : 'Completed')
+      await updateTask(token, task._id, formData)
       fetchTasks()
     } catch {}
   }
@@ -158,7 +161,6 @@ const Dashboard: React.FC = () => {
     <Box maxWidth={800} mx="auto" mt={4}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Welcome, {user.name}</Typography>
-        <Button variant="outlined" color="secondary" onClick={logout}>Logout</Button>
       </Box>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={2}>
         <FormControl sx={{ minWidth: 120 }}>
@@ -188,7 +190,12 @@ const Dashboard: React.FC = () => {
         </FormControl>
         <TextField label="Search" value={search} onChange={e => setSearch(e.target.value)} fullWidth />
       </Stack>
-      <Button variant="contained" color="primary" onClick={() => { setOpen(true); setEditTask(null); }} sx={{ mb: 2 }}>
+      <Button 
+        variant="contained" 
+        color="primary" 
+        onClick={() => setOpen(true)} 
+        sx={{ mb: 2 }}
+      >
         Add Task
       </Button>
       {loading && <CircularProgress />}
@@ -244,7 +251,6 @@ const Dashboard: React.FC = () => {
               dueDate: editTask.dueDate,
               priority: editTask.priority,
               status: editTask.status,
-              category: editTask.category,
             } : {}}
             token={token}
           />

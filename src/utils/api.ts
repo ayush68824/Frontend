@@ -9,16 +9,22 @@ export const getTasks = async (token: string) => {
   return res.data
 }
 
-export const createTask = async (token: string, data: any) => {
+export const createTask = async (token: string, data: FormData) => {
   const res = await axios.post(`${API_URL}/tasks`, data, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    },
   })
   return res.data
 }
 
-export const updateTask = async (token: string, id: string, data: any) => {
+export const updateTask = async (token: string, id: string, data: FormData) => {
   const res = await axios.put(`${API_URL}/tasks/${id}`, data, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    },
   })
   return res.data
 }

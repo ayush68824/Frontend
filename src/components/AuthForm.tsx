@@ -7,8 +7,6 @@ interface AuthFormProps {
   onSubmit: (e: React.FormEvent) => void
   error?: string
   submitLabel: string
-  googleLabel: string
-  onGoogle: () => void
   showPhotoUpload?: boolean
   photoUrl?: string | null
   onPhotoChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -20,8 +18,6 @@ const AuthForm: React.FC<AuthFormProps> = ({
   onSubmit,
   error,
   submitLabel,
-  googleLabel,
-  onGoogle,
   showPhotoUpload,
   photoUrl,
   onPhotoChange,
@@ -53,7 +49,6 @@ const AuthForm: React.FC<AuthFormProps> = ({
         )}
         {error && <Typography color="error">{error}</Typography>}
         <Button type="submit" variant="contained" color="primary" fullWidth>{submitLabel}</Button>
-        <Button onClick={onGoogle} variant="outlined" color="secondary" fullWidth>{googleLabel}</Button>
       </Stack>
     </form>
   </Box>
