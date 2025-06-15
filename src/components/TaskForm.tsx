@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Button, TextField, MenuItem, Stack, InputLabel, Select, FormControl } from '@mui/material'
+import { Box, Button, TextField, MenuItem, Stack, InputLabel, Select, FormControl, Alert } from '@mui/material'
 import type { SelectChangeEvent } from '@mui/material'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
@@ -26,7 +26,7 @@ interface TaskFormProps {
     status?: string
     image?: File | null
   }
-  onSubmit: (data: FormData) => void
+  onSubmit: (data: FormData) => Promise<void>
   loading?: boolean
   submitLabel?: string
   token?: string | null
@@ -40,25 +40,33 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   const [status, setStatus] = useState(initial.status || 'Not Started')
   const [image, setImage] = useState<File | null>(initial.image || null)
   const [titleError, setTitleError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+    
     if (!title.trim()) {
       setTitleError('Title is required')
       return
     }
     
-    const formData = new FormData()
-    formData.append('title', title.trim())
-    formData.append('description', description.trim())
-    if (dueDate) {
-      formData.append('dueDate', format(dueDate, 'yyyy-MM-dd'))
+    try {
+      const formData = new FormData()
+      formData.append('title', title.trim())
+      formData.append('description', description.trim())
+      if (dueDate) {
+        formData.append('dueDate', format(dueDate, 'yyyy-MM-dd'))
+      }
+      formData.append('priority', priority)
+      formData.append('status', status)
+      if (image) formData.append('image', image)
+      
+      await onSubmit(formData)
+    } catch (err: any) {
+      console.error('Task submission error:', err)
+      setError(err.message || 'Failed to create task. Please try again.')
     }
-    formData.append('priority', priority)
-    formData.append('status', status)
-    if (image) formData.append('image', image)
-    
-    onSubmit(formData)
   }
 
   const handlePriorityChange = (event: SelectChangeEvent) => {
@@ -72,10 +80,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ initial = {}, onSubmit, loading, su
   return (
     <Box component="form" onSubmit={handleSubmit} p={2}>
       <Stack spacing={2}>
+        {error && <Alert severity="error">{error}</Alert>}
         <TextField 
           label="Title" 
           value={title} 
-          onChange={e => setTitle(e.target.value)} 
+          onChange={e => {
+            setTitle(e.target.value)
+            setTitleError(null)
+          }}
           required 
           fullWidth 
           variant="outlined" 

@@ -4,7 +4,7 @@ import { Box, Typography, TextField, Button, Avatar, CircularProgress, Alert, St
 import { updateProfile } from '../utils/api'
 
 const Settings: React.FC = () => {
-  const { user, token, setError } = useAuth()
+  const { user, token, setError, updateUser } = useAuth()
   const [name, setName] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
   const [photo, setPhoto] = useState<File | null>(null)
@@ -30,10 +30,12 @@ const Settings: React.FC = () => {
     setLoading(true)
     setSuccess('')
     setLocalError('')
+    setError('')
+
     try {
       const formData = new FormData()
-      formData.append('name', name)
-      formData.append('email', email)
+      formData.append('name', name.trim())
+      formData.append('email', email.trim())
       if (photo) {
         formData.append('photo', photo)
       }
@@ -41,15 +43,16 @@ const Settings: React.FC = () => {
       const response = await updateProfile(formData)
       
       if (response.user) {
+        // Update user in localStorage and context
         localStorage.setItem('user', JSON.stringify(response.user))
+        updateUser(response.user)
         setSuccess('Profile updated successfully!')
-        // Update the user in the auth context
-        window.location.reload() // Reload to update the user context
       } else {
-        setLocalError('Failed to update profile: Invalid response from server')
+        throw new Error('Invalid response from server')
       }
     } catch (e: any) {
-      const errorMessage = e.message || 'Update failed'
+      console.error('Profile update error:', e)
+      const errorMessage = e.message || 'Failed to update profile'
       setLocalError(errorMessage)
       setError(errorMessage)
     } finally {
@@ -84,6 +87,7 @@ const Settings: React.FC = () => {
             onChange={(e) => setName(e.target.value)}
             fullWidth
             required
+            error={!!error}
           />
           <TextField
             label="Email"
@@ -92,6 +96,7 @@ const Settings: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             fullWidth
             required
+            error={!!error}
           />
           {success && <Alert severity="success">{success}</Alert>}
           {error && <Alert severity="error">{error}</Alert>}
@@ -100,6 +105,7 @@ const Settings: React.FC = () => {
             variant="contained"
             color="primary"
             disabled={loading}
+            fullWidth
           >
             {loading ? <CircularProgress size={24} /> : 'Update Profile'}
           </Button>
