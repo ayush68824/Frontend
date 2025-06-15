@@ -1,40 +1,33 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import { store } from './store';
-import App from './App';
-import './index.css';
-import 'react-toastify/dist/ReactToastify.css';
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { AuthProvider } from './context/AuthContext'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#1976d2' },
+    secondary: { main: '#9c27b0' },
+    background: { default: '#f4f6fa' },
+  },
+})
 
-if (!googleClientId) {
-  throw new Error("VITE_GOOGLE_CLIENT_ID is not defined in your environment variables");
-}
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <GoogleOAuthProvider clientId={googleClientId}>
-        <BrowserRouter>
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <GoogleOAuthProvider clientId="665955875780-4956p9i9u01rqi0rhmqe7nnge992mbpc.apps.googleusercontent.com">
+        <AuthProvider>
           <App />
-          <ToastContainer
-            position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-        </BrowserRouter>
+          <ToastContainer position="top-right" autoClose={3000} />
+        </AuthProvider>
       </GoogleOAuthProvider>
-    </Provider>
-  </React.StrictMode>
-);
+    </ThemeProvider>
+  </StrictMode>,
+)

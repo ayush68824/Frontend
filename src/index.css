@@ -1,198 +1,68 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
 
-@layer base {
-  :root {
-    /* Primary Colors */
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    
-    /* Background Colors */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    
-    /* Secondary Colors */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    
-    /* Accent Colors */
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    
-    /* Status Colors */
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 48 96% 89%;
-    --error: 0 84.2% 60.2%;
-    --error-foreground: 210 40% 98%;
-    
-    /* Neutral Colors */
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    
-    /* Task Status Colors */
-    --status-pending: 38 92% 50%;
-    --status-in-progress: 221.2 83.2% 53.3%;
-    --status-completed: 142.1 76.2% 36.3%;
-    
-    /* Task Priority Colors */
-    --priority-low: 142.1 76.2% 36.3%;
-    --priority-medium: 38 92% 50%;
-    --priority-high: 0 84.2% 60.2%;
-    
-    /* Border Radius */
-    --radius: 0.5rem;
-  }
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
 
-  .dark {
-    /* Primary Colors */
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    
-    /* Background Colors */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    
-    /* Secondary Colors */
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    
-    /* Accent Colors */
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    
-    /* Status Colors */
-    --success: 142.1 70.6% 45.3%;
-    --success-foreground: 144.9 80.4% 10%;
-    --warning: 48 96% 89%;
-    --warning-foreground: 38 92% 50%;
-    --error: 0 62.8% 30.6%;
-    --error-foreground: 210 40% 98%;
-    
-    /* Neutral Colors */
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    
-    /* Task Status Colors */
-    --status-pending: 48 96% 89%;
-    --status-in-progress: 217.2 91.2% 59.8%;
-    --status-completed: 142.1 70.6% 45.3%;
-    
-    /* Task Priority Colors */
-    --priority-low: 142.1 70.6% 45.3%;
-    --priority-medium: 48 96% 89%;
-    --priority-high: 0 62.8% 30.6%;
-  }
-
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@layer components {
-  .btn {
-    @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
-  }
-
-  .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90;
-  }
-
-  .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
-  }
-
-  .btn-destructive {
-    @apply bg-error text-error-foreground hover:bg-error/90;
-  }
-
-  .input {
-    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  .select {
-    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  /* Task Status Badges */
-  .status-badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
-  }
-
-  .status-pending {
-    @apply bg-[hsl(var(--status-pending))] text-[hsl(var(--status-pending-foreground))];
-  }
-
-  .status-in-progress {
-    @apply bg-[hsl(var(--status-in-progress))] text-[hsl(var(--status-in-progress-foreground))];
-  }
-
-  .status-completed {
-    @apply bg-[hsl(var(--status-completed))] text-[hsl(var(--status-completed-foreground))];
-  }
-
-  /* Task Priority Badges */
-  .priority-badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
-  }
-
-  .priority-low {
-    @apply bg-[hsl(var(--priority-low))] text-[hsl(var(--priority-low-foreground))];
-  }
-
-  .priority-medium {
-    @apply bg-[hsl(var(--priority-medium))] text-[hsl(var(--priority-medium-foreground))];
-  }
-
-  .priority-high {
-    @apply bg-[hsl(var(--priority-high))] text-[hsl(var(--priority-high-foreground))];
-  }
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
 }
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+a:hover {
+  color: #535bf2;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
 }
 
-/* Smooth transitions for all interactive elements */
-button, a, input, select {
-  transition: all 0.2s ease-in-out;
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* Responsive container padding */
-@media (max-width: 600px) {
-  .container {
-    @apply px-4;
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
   }
-} 
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
