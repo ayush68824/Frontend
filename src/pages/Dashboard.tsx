@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getTasks, createTask, updateTask } from '../utils/api'
-import { CircularProgress, Box, Alert, Button, Stack, Snackbar, Grid, Avatar, Typography, Paper } from '@mui/material'
+import { CircularProgress, Box, Alert, Button, Snackbar, Grid, Avatar, Typography, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
 import AddIcon from '@mui/icons-material/Add'
