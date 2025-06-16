@@ -7,7 +7,6 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
   },
   withCredentials: true
 })
@@ -36,79 +35,92 @@ api.interceptors.response.use(
       localStorage.removeItem('user')
       window.location.href = '/login'
     }
-    const message = error.response?.data?.message || error.message || 'An error occurred'
-    return Promise.reject(new Error(message))
+    return Promise.reject(error)
   }
 )
 
 // Task endpoints
 export const getTasks = async () => {
   try {
-    const res = await api.get('/tasks')
-    return res.data
+    const response = await api.get('/tasks')
+    return response.data
   } catch (error: any) {
-    console.error('Get tasks error:', error)
-    throw error
+    console.error('Error fetching tasks:', error)
+    throw new Error(error.response?.data?.message || 'Failed to fetch tasks')
   }
 }
 
 export const createTask = async (formData: FormData) => {
   try {
-    // Remove Content-Type header to let browser set it with boundary
-    const res = await api.post('/tasks', formData, {
+    const response = await api.post('/tasks', formData, {
       headers: {
-        'Content-Type': undefined
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     })
-    return res.data
+    return response.data
   } catch (error: any) {
-    console.error('Create task error:', error)
-    throw error
+    console.error('Error creating task:', error)
+    throw new Error(error.response?.data?.message || 'Failed to create task')
   }
 }
 
 export const updateTask = async (id: string, formData: FormData) => {
   try {
-    const res = await api.put(`/tasks/${id}`, formData, {
+    const response = await api.put(`/tasks/${id}`, formData, {
       headers: {
-        'Content-Type': undefined
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     })
-    return res.data
+    return response.data
   } catch (error: any) {
-    console.error('Update task error:', error)
-    throw error
+    console.error('Error updating task:', error)
+    throw new Error(error.response?.data?.message || 'Failed to update task')
   }
 }
 
 export const deleteTask = async (id: string) => {
   try {
-    const res = await api.delete(`/tasks/${id}`)
-    return res.data
+    const response = await api.delete(`/tasks/${id}`)
+    return response.data
   } catch (error: any) {
-    console.error('Delete task error:', error)
-    throw error
+    console.error('Error deleting task:', error)
+    throw new Error(error.response?.data?.message || 'Failed to delete task')
   }
 }
 
 // Auth endpoints
-export const login = async (data: { email: string; password: string }) => {
+export const login = async (email: string, password: string) => {
   try {
-    const res = await api.post('/auth/login', data)
-    return res.data
+    const response = await api.post('/auth/login', { email, password })
+    localStorage.setItem('token', response.data.token)
+    return response.data
   } catch (error: any) {
-    console.error('Login error:', error)
-    throw error
+    console.error('Error logging in:', error)
+    throw new Error(error.response?.data?.message || 'Failed to login')
   }
 }
 
-export const register = async (data: { name: string; email: string; password: string }) => {
+export const register = async (formData: FormData) => {
   try {
-    const res = await api.post('/auth/register', data)
-    return res.data
+    const response = await api.post('/auth/register', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
   } catch (error: any) {
-    console.error('Register error:', error)
-    throw error
+    console.error('Error registering:', error)
+    throw new Error(error.response?.data?.message || 'Failed to register')
+  }
+}
+
+export const logout = async () => {
+  try {
+    await api.post('/auth/logout')
+    localStorage.removeItem('token')
+  } catch (error: any) {
+    console.error('Error logging out:', error)
+    throw new Error(error.response?.data?.message || 'Failed to logout')
   }
 }
 

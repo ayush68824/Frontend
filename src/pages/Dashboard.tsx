@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getTasks, createTask, updateTask, deleteTask } from '../utils/api'
-import { CircularProgress, Typography, Box, List, ListItem, ListItemText, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Checkbox, MenuItem, Select, FormControl, InputLabel, TextField, Stack, Chip, Snackbar } from '@mui/material'
+import { CircularProgress, Typography, Box, List, ListItem, ListItemText, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Checkbox, MenuItem, Select, FormControl, InputLabel, TextField, Stack, Chip, Snackbar, Grid } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import AddIcon from '@mui/icons-material/Add'
+import SearchIcon from '@mui/icons-material/Search'
+import InputAdornment from '@mui/material/InputAdornment'
 
 interface Task {
   _id: string
@@ -212,246 +215,113 @@ const Dashboard: React.FC = () => {
   if (!user) return null
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
-      <Stack 
-        direction={{ xs: 'column', sm: 'row' }} 
-        justifyContent="space-between" 
-        alignItems={{ xs: 'stretch', sm: 'center' }} 
-        spacing={2}
-        mb={3}
-      >
-        <Typography variant="h4">Tasks</Typography>
-        <Button 
-          variant="contained" 
-          onClick={() => {
-            setEditTask(null)
-            setOpen(true)
-          }}
-          fullWidth={false}
-        >
-          Create Task
-        </Button>
-      </Stack>
-
-      <Stack 
-        direction={{ xs: 'column', sm: 'row' }} 
-        spacing={2} 
-        mb={3}
-        sx={{
-          '& .MuiFormControl-root': {
-            minWidth: { xs: '100%', sm: 120 }
-          }
-        }}
-      >
-        <FormControl>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={statusFilter}
-            label="Status"
-            onChange={(e) => setStatusFilter(e.target.value)}
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+      <Stack spacing={3}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2,
+          alignItems: { xs: 'stretch', sm: 'center' }
+        }}>
+          <Button
+            variant="contained"
+            onClick={() => setOpen(true)}
+            startIcon={<AddIcon />}
+            fullWidth={false}
+            sx={{ 
+              width: { xs: '100%', sm: 'auto' },
+              minWidth: { sm: '200px' }
+            }}
           >
-            {statusOptions.map(option => (
-              <MenuItem key={option} value={option}>{option}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl>
-          <InputLabel>Priority</InputLabel>
-          <Select
-            value={priorityFilter}
-            label="Priority"
-            onChange={(e) => setPriorityFilter(e.target.value)}
-          >
-            {priorityOptions.map(option => (
-              <MenuItem key={option} value={option}>{option}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl>
-          <InputLabel>Sort By</InputLabel>
-          <Select
-            value={sortBy}
-            label="Sort By"
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            {sortOptions.map(option => (
-              <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            Create Task
+          </Button>
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+            width: { xs: '100%', sm: 'auto' }
+          }}>
+            <FormControl sx={{ minWidth: { xs: '100%', sm: '120px' } }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={statusFilter}
+                label="Status"
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <MenuItem value="all">All</MenuItem>
+                <MenuItem value="Not Started">Not Started</MenuItem>
+                <MenuItem value="In Progress">In Progress</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl sx={{ minWidth: { xs: '100%', sm: '120px' } }}>
+              <InputLabel>Priority</InputLabel>
+              <Select
+                value={priorityFilter}
+                label="Priority"
+                onChange={(e) => setPriorityFilter(e.target.value)}
+              >
+                <MenuItem value="all">All</MenuItem>
+                <MenuItem value="High">High</MenuItem>
+                <MenuItem value="Moderate">Moderate</MenuItem>
+                <MenuItem value="Low">Low</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
 
         <TextField
-          label="Search"
+          label="Search Tasks"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ flexGrow: 1 }}
+          fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
         />
+
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : filteredTasks.length === 0 ? (
+          <Alert severity="info">No tasks found</Alert>
+        ) : (
+          <Grid container spacing={2}>
+            {filteredTasks.map((task) => (
+              <Grid item xs={12} sm={6} md={4} key={task._id}>
+                <TaskCard
+                  task={task}
+                  onEdit={() => handleEditTask(task)}
+                  onDelete={() => setDeleteId(task._id)}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Stack>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {createError && <Alert severity="error" sx={{ mb: 2 }}>{createError}</Alert>}
-      {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
+      <TaskForm
+        open={open}
+        onClose={() => setOpen(false)}
+        onSubmit={handleCreateTask}
+        loading={createLoading}
+        submitLabel="Create Task"
+      />
 
-      {loading ? (
-        <Box display="flex" justifyContent="center" p={3}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <List>
-          {sortedTasks.map(task => (
-            <ListItem
-              key={task._id}
-              sx={{
-                bgcolor: 'background.paper',
-                mb: 1,
-                borderRadius: 1,
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-                flexDirection: { xs: 'column', sm: 'row' },
-                alignItems: { xs: 'stretch', sm: 'center' },
-                gap: 1
-              }}
-              secondaryAction={
-                <Stack 
-                  direction="row" 
-                  spacing={1}
-                  sx={{
-                    position: { xs: 'static', sm: 'absolute' },
-                    right: { xs: 'auto', sm: 16 },
-                    mt: { xs: 1, sm: 0 }
-                  }}
-                >
-                  <IconButton edge="end" onClick={() => handleEditTask(task)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton edge="end" onClick={() => setDeleteId(task._id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </Stack>
-              }
-            >
-              <ListItemText
-                primary={
-                  <Stack 
-                    direction={{ xs: 'column', sm: 'row' }} 
-                    spacing={1} 
-                    alignItems={{ xs: 'flex-start', sm: 'center' }}
-                  >
-                    <Checkbox
-                      checked={task.status === 'Completed'}
-                      onChange={() => handleStatusToggle(task)}
-                    />
-                    <Typography
-                      sx={{
-                        textDecoration: task.status === 'Completed' ? 'line-through' : 'none',
-                        color: task.status === 'Completed' ? 'text.secondary' : 'text.primary',
-                      }}
-                    >
-                      {task.title}
-                    </Typography>
-                    <Stack 
-                      direction="row" 
-                      spacing={1}
-                      sx={{ 
-                        flexWrap: 'wrap',
-                        gap: 0.5
-                      }}
-                    >
-                      <Chip
-                        label={task.priority}
-                        size="small"
-                        color={
-                          task.priority === 'High' ? 'error' :
-                          task.priority === 'Moderate' ? 'warning' : 'success'
-                        }
-                      />
-                      <Chip
-                        label={task.status}
-                        size="small"
-                        color={
-                          task.status === 'Completed' ? 'success' :
-                          task.status === 'In Progress' ? 'warning' : 'default'
-                        }
-                      />
-                    </Stack>
-                  </Stack>
-                }
-                secondary={
-                  <Stack 
-                    direction={{ xs: 'column', sm: 'row' }} 
-                    spacing={1} 
-                    mt={0.5}
-                    sx={{
-                      flexWrap: 'wrap',
-                      gap: 1
-                    }}
-                  >
-                    {task.dueDate && (
-                      <Typography variant="body2" color="text.secondary">
-                        Due: {new Date(task.dueDate).toLocaleDateString()}
-                      </Typography>
-                    )}
-                    {task.description && (
-                      <Typography variant="body2" color="text.secondary">
-                        {task.description}
-                      </Typography>
-                    )}
-                  </Stack>
-                }
-              />
-            </ListItem>
-          ))}
-        </List>
-      )}
-
-      <Dialog 
-        open={open} 
-        onClose={() => setOpen(false)} 
-        maxWidth="sm" 
-        fullWidth
-        PaperProps={{
-          sx: {
-            width: { xs: '95%', sm: 'auto' },
-            maxHeight: { xs: '90vh', sm: 'auto' }
-          }
-        }}
-      >
-        <DialogTitle>{editTask ? 'Edit Task' : 'Create Task'}</DialogTitle>
-        <TaskForm
-          initial={editTask || {}}
-          onSubmit={editTask ? handleUpdateTask : handleCreateTask}
-          loading={createLoading}
-          submitLabel={editTask ? 'Update' : 'Create'}
-        />
-      </Dialog>
-
-      <Dialog 
-        open={!!deleteId} 
+      <TaskForm
+        open={!!deleteId}
         onClose={() => setDeleteId(null)}
-        PaperProps={{
-          sx: {
-            width: { xs: '95%', sm: 'auto' }
-          }
-        }}
-      >
-        <DialogTitle>Delete Task</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete this task?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteId(null)}>Cancel</Button>
-          <Button 
-            onClick={handleDeleteTask} 
-            color="error" 
-            disabled={deleteLoading}
-          >
-            {deleteLoading ? 'Deleting...' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onSubmit={handleDeleteTask}
+        loading={deleteLoading}
+        submitLabel="Delete Task"
+      />
 
       <Snackbar
         open={snackbar.open}
