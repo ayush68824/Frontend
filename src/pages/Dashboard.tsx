@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getTasks, createTask, updateTask, deleteTask } from '../utils/api'
-import { CircularProgress, Box, Alert, Button, FormControl, InputLabel, TextField, Stack, Snackbar, Select, MenuItem, Grid, Avatar, Card, CardContent, Typography, Divider, Paper } from '@mui/material'
+import { CircularProgress, Box, Alert, Button, FormControl, InputLabel, TextField, Stack, Snackbar, Select, MenuItem, Grid, Avatar, Card, CardContent, Typography, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
 import AddIcon from '@mui/icons-material/Add'
@@ -31,7 +31,6 @@ const Dashboard: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [statusFilter, setStatusFilter] = useState<typeof statusOptions[number]>('All')
   const [priorityFilter, setPriorityFilter] = useState<typeof priorityOptions[number]>('All')
-  const [searchQuery, setSearchQuery] = useState('')
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -128,9 +127,7 @@ const Dashboard: React.FC = () => {
   const filteredTasks = tasks.filter(task => {
     const matchesStatus = statusFilter === 'All' || task.status === statusFilter
     const matchesPriority = priorityFilter === 'All' || task.priority === priorityFilter
-    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (task.description || '').toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesPriority && matchesSearch
+    return matchesStatus && matchesPriority
   })
 
   if (!user) return null
