@@ -39,8 +39,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
 }) => {
   const [title, setTitle] = useState(initial.title || '');
   const [description, setDescription] = useState(initial.description || '');
-  const [status, setStatus] = useState(initial.status || 'Not Started');
-  const [priority, setPriority] = useState(initial.priority || 'Moderate');
+  const [status, setStatus] = useState<'Not Started' | 'In Progress' | 'Completed'>(initial.status || 'Not Started');
+  const [priority, setPriority] = useState<'High' | 'Moderate' | 'Low'>(initial.priority || 'Moderate');
   const [dueDate, setDueDate] = useState<Date | null>(initial.dueDate ? new Date(initial.dueDate) : null);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initial.image || null);
@@ -138,7 +138,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               <Select
                 value={status}
                 label="Status"
-                onChange={(e: SelectChangeEvent) => setStatus(e.target.value)}
+                onChange={(e: SelectChangeEvent) => setStatus(e.target.value as 'Not Started' | 'In Progress' | 'Completed')}
               >
                 <MenuItem value="Not Started">Not Started</MenuItem>
                 <MenuItem value="In Progress">In Progress</MenuItem>
@@ -150,7 +150,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               <Select
                 value={priority}
                 label="Priority"
-                onChange={(e: SelectChangeEvent) => setPriority(e.target.value)}
+                onChange={(e: SelectChangeEvent) => setPriority(e.target.value as 'High' | 'Moderate' | 'Low')}
               >
                 <MenuItem value="High">High</MenuItem>
                 <MenuItem value="Moderate">Moderate</MenuItem>

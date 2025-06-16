@@ -8,8 +8,8 @@ import AddIcon from '@mui/icons-material/Add'
 import type { Task } from '../types'
 import TaskCard from '../components/TaskCard'
 
-const statusOptions = ['All', 'Not Started', 'In Progress', 'Completed']
-const priorityOptions = ['All', 'High', 'Moderate', 'Low']
+const statusOptions = ['All', 'Not Started', 'In Progress', 'Completed'] as const;
+const priorityOptions = ['All', 'High', 'Moderate', 'Low'] as const;
 const sortOptions = [
   { value: 'dueDate', label: 'Due Date' },
   { value: 'priority', label: 'Priority' },
@@ -25,8 +25,8 @@ const Dashboard: React.FC = () => {
   const [openEditForm, setOpenEditForm] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState('All')
-  const [priorityFilter, setPriorityFilter] = useState('All')
+  const [statusFilter, setStatusFilter] = useState<typeof statusOptions[number]>('All')
+  const [priorityFilter, setPriorityFilter] = useState<typeof priorityOptions[number]>('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -182,12 +182,13 @@ const Dashboard: React.FC = () => {
               <Select
                 value={statusFilter}
                 label="Status"
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => setStatusFilter(e.target.value as typeof statusOptions[number])}
               >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Not Started">Not Started</MenuItem>
-                <MenuItem value="In Progress">In Progress</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
+                {statusOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <FormControl sx={{ minWidth: { xs: '100%', sm: '120px' } }}>
@@ -195,12 +196,13 @@ const Dashboard: React.FC = () => {
               <Select
                 value={priorityFilter}
                 label="Priority"
-                onChange={(e) => setPriorityFilter(e.target.value)}
+                onChange={(e) => setPriorityFilter(e.target.value as typeof priorityOptions[number])}
               >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="High">High</MenuItem>
-                <MenuItem value="Moderate">Moderate</MenuItem>
-                <MenuItem value="Low">Low</MenuItem>
+                {priorityOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Box>
