@@ -12,9 +12,6 @@ import SchoolIcon from '@mui/icons-material/School';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 
-const statusOptions = ['All', 'Not Started', 'In Progress', 'Completed'] as const;
-const priorityOptions = ['All', 'High', 'Moderate', 'Low'] as const;
-
 const categoryData = [
   { label: 'Design', icon: <DesignServicesIcon />, color: '#ffb74d' },
   { label: 'Meeting', icon: <MeetingRoomIcon />, color: '#64b5f6' },
