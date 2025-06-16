@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getTasks, createTask, updateTask, deleteTask } from '../utils/api'
-import { CircularProgress, Typography, Box, List, ListItem, ListItemText, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Checkbox, MenuItem, Select, FormControl, InputLabel, TextField, Stack, Chip } from '@mui/material'
+import { CircularProgress, Typography, Box, List, ListItem, ListItemText, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Checkbox, MenuItem, Select, FormControl, InputLabel, TextField, Stack, Chip, Snackbar } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
 import EditIcon from '@mui/icons-material/Edit'
@@ -41,15 +41,30 @@ const Dashboard: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState('All')
   const [sortBy, setSortBy] = useState('dueDate')
   const [search, setSearch] = useState('')
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  })
   const navigate = useNavigate()
 
-  const fetchTasks = () => {
+  const fetchTasks = async () => {
     if (!token) return
     setLoading(true)
-    getTasks()
-      .then(data => setTasks(data.tasks || data))
-      .catch(() => setError('Failed to load tasks'))
-      .finally(() => setLoading(false))
+    try {
+      const response = await getTasks()
+      setTasks(response.data.tasks || response.data)
+      setError(null)
+    } catch (err: any) {
+      setError(err.message || 'Failed to load tasks')
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to load tasks',
+        severity: 'error'
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -66,14 +81,24 @@ const Dashboard: React.FC = () => {
     setCreateError(null)
     try {
       const response = await createTask(formData)
-      if (response.task) {
+      if (response.data.task) {
         setOpen(false)
         fetchTasks()
+        setSnackbar({
+          open: true,
+          message: 'Task created successfully',
+          severity: 'success'
+        })
       } else {
-        setCreateError('Failed to create task: Invalid response from server')
+        throw new Error('Invalid response from server')
       }
-    } catch (e: any) {
-      setCreateError(e.message || 'Failed to create task')
+    } catch (err: any) {
+      setCreateError(err.message || 'Failed to create task')
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to create task',
+        severity: 'error'
+      })
     } finally {
       setCreateLoading(false)
     }
@@ -90,15 +115,25 @@ const Dashboard: React.FC = () => {
     setCreateError(null)
     try {
       const response = await updateTask(editTask._id, formData)
-      if (response.task) {
+      if (response.data.task) {
         setOpen(false)
         setEditTask(null)
         fetchTasks()
+        setSnackbar({
+          open: true,
+          message: 'Task updated successfully',
+          severity: 'success'
+        })
       } else {
-        setCreateError('Failed to update task: Invalid response from server')
+        throw new Error('Invalid response from server')
       }
-    } catch (e: any) {
-      setCreateError(e.message || 'Failed to update task')
+    } catch (err: any) {
+      setCreateError(err.message || 'Failed to update task')
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to update task',
+        severity: 'error'
+      })
     } finally {
       setCreateLoading(false)
     }
@@ -112,8 +147,18 @@ const Dashboard: React.FC = () => {
       await deleteTask(deleteId)
       setDeleteId(null)
       fetchTasks()
-    } catch (e: any) {
-      setDeleteError(e.message || 'Failed to delete task')
+      setSnackbar({
+        open: true,
+        message: 'Task deleted successfully',
+        severity: 'success'
+      })
+    } catch (err: any) {
+      setDeleteError(err.message || 'Failed to delete task')
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to delete task',
+        severity: 'error'
+      })
     } finally {
       setDeleteLoading(false)
     }
@@ -126,7 +171,18 @@ const Dashboard: React.FC = () => {
       formData.append('status', task.status === 'Completed' ? 'Not Started' : 'Completed')
       await updateTask(task._id, formData)
       fetchTasks()
-    } catch {}
+      setSnackbar({
+        open: true,
+        message: `Task marked as ${task.status === 'Completed' ? 'Not Started' : 'Completed'}`,
+        severity: 'success'
+      })
+    } catch (err: any) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to update task status',
+        severity: 'error'
+      })
+    }
   }
 
   const filteredTasks = tasks.filter(task => {
@@ -156,8 +212,14 @@ const Dashboard: React.FC = () => {
   if (!user) return null
 
   return (
-    <Box p={3}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+    <Box sx={{ p: { xs: 2, sm: 3 } }}>
+      <Stack 
+        direction={{ xs: 'column', sm: 'row' }} 
+        justifyContent="space-between" 
+        alignItems={{ xs: 'stretch', sm: 'center' }} 
+        spacing={2}
+        mb={3}
+      >
         <Typography variant="h4">Tasks</Typography>
         <Button 
           variant="contained" 
@@ -165,13 +227,23 @@ const Dashboard: React.FC = () => {
             setEditTask(null)
             setOpen(true)
           }}
+          fullWidth={false}
         >
           Create Task
         </Button>
       </Stack>
 
-      <Stack direction="row" spacing={2} mb={3}>
-        <FormControl sx={{ minWidth: 120 }}>
+      <Stack 
+        direction={{ xs: 'column', sm: 'row' }} 
+        spacing={2} 
+        mb={3}
+        sx={{
+          '& .MuiFormControl-root': {
+            minWidth: { xs: '100%', sm: 120 }
+          }
+        }}
+      >
+        <FormControl>
           <InputLabel>Status</InputLabel>
           <Select
             value={statusFilter}
@@ -184,7 +256,7 @@ const Dashboard: React.FC = () => {
           </Select>
         </FormControl>
 
-        <FormControl sx={{ minWidth: 120 }}>
+        <FormControl>
           <InputLabel>Priority</InputLabel>
           <Select
             value={priorityFilter}
@@ -197,7 +269,7 @@ const Dashboard: React.FC = () => {
           </Select>
         </FormControl>
 
-        <FormControl sx={{ minWidth: 120 }}>
+        <FormControl>
           <InputLabel>Sort By</InputLabel>
           <Select
             value={sortBy}
@@ -238,9 +310,20 @@ const Dashboard: React.FC = () => {
                 '&:hover': {
                   bgcolor: 'action.hover',
                 },
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 1
               }}
               secondaryAction={
-                <Stack direction="row" spacing={1}>
+                <Stack 
+                  direction="row" 
+                  spacing={1}
+                  sx={{
+                    position: { xs: 'static', sm: 'absolute' },
+                    right: { xs: 'auto', sm: 16 },
+                    mt: { xs: 1, sm: 0 }
+                  }}
+                >
                   <IconButton edge="end" onClick={() => handleEditTask(task)}>
                     <EditIcon />
                   </IconButton>
@@ -252,7 +335,11 @@ const Dashboard: React.FC = () => {
             >
               <ListItemText
                 primary={
-                  <Stack direction="row" spacing={1} alignItems="center">
+                  <Stack 
+                    direction={{ xs: 'column', sm: 'row' }} 
+                    spacing={1} 
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  >
                     <Checkbox
                       checked={task.status === 'Completed'}
                       onChange={() => handleStatusToggle(task)}
@@ -265,26 +352,43 @@ const Dashboard: React.FC = () => {
                     >
                       {task.title}
                     </Typography>
-                    <Chip
-                      label={task.priority}
-                      size="small"
-                      color={
-                        task.priority === 'High' ? 'error' :
-                        task.priority === 'Moderate' ? 'warning' : 'success'
-                      }
-                    />
-                    <Chip
-                      label={task.status}
-                      size="small"
-                      color={
-                        task.status === 'Completed' ? 'success' :
-                        task.status === 'In Progress' ? 'warning' : 'default'
-                      }
-                    />
+                    <Stack 
+                      direction="row" 
+                      spacing={1}
+                      sx={{ 
+                        flexWrap: 'wrap',
+                        gap: 0.5
+                      }}
+                    >
+                      <Chip
+                        label={task.priority}
+                        size="small"
+                        color={
+                          task.priority === 'High' ? 'error' :
+                          task.priority === 'Moderate' ? 'warning' : 'success'
+                        }
+                      />
+                      <Chip
+                        label={task.status}
+                        size="small"
+                        color={
+                          task.status === 'Completed' ? 'success' :
+                          task.status === 'In Progress' ? 'warning' : 'default'
+                        }
+                      />
+                    </Stack>
                   </Stack>
                 }
                 secondary={
-                  <Stack direction="row" spacing={1} mt={0.5}>
+                  <Stack 
+                    direction={{ xs: 'column', sm: 'row' }} 
+                    spacing={1} 
+                    mt={0.5}
+                    sx={{
+                      flexWrap: 'wrap',
+                      gap: 1
+                    }}
+                  >
                     {task.dueDate && (
                       <Typography variant="body2" color="text.secondary">
                         Due: {new Date(task.dueDate).toLocaleDateString()}
@@ -303,7 +407,18 @@ const Dashboard: React.FC = () => {
         </List>
       )}
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={open} 
+        onClose={() => setOpen(false)} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            width: { xs: '95%', sm: 'auto' },
+            maxHeight: { xs: '90vh', sm: 'auto' }
+          }
+        }}
+      >
         <DialogTitle>{editTask ? 'Edit Task' : 'Create Task'}</DialogTitle>
         <TaskForm
           initial={editTask || {}}
@@ -313,7 +428,15 @@ const Dashboard: React.FC = () => {
         />
       </Dialog>
 
-      <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
+      <Dialog 
+        open={!!deleteId} 
+        onClose={() => setDeleteId(null)}
+        PaperProps={{
+          sx: {
+            width: { xs: '95%', sm: 'auto' }
+          }
+        }}
+      >
         <DialogTitle>Delete Task</DialogTitle>
         <DialogContent>
           <Typography>Are you sure you want to delete this task?</Typography>
@@ -329,6 +452,20 @@ const Dashboard: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

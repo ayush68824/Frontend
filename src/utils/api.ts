@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 
-const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
+const API_URL = 'http://localhost:5000/api'
 
 // Create axios instance with default config
 const api: AxiosInstance = axios.create({
@@ -24,65 +24,34 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
-    }
-    return Promise.reject(error)
+    const message = error.response?.data?.message || 'An error occurred'
+    return Promise.reject(new Error(message))
   }
 )
 
-export const getTasks = async () => {
-  try {
-    const res = await api.get('/tasks')
-    return res.data
-  } catch (error: any) {
-    console.error('Get tasks error:', error.response?.data)
-    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to fetch tasks'
-    throw new Error(errorMessage)
+// Task endpoints
+export const getTasks = () => api.get('/tasks')
+export const createTask = (formData: FormData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   }
+  return api.post('/tasks', formData, config)
 }
-
-export const createTask = async (data: FormData) => {
-  try {
-    // Remove Content-Type header to let browser set it with boundary
-    const res = await api.post('/tasks', data, {
-      headers: {
-        'Content-Type': undefined
-      }
-    })
-    return res.data
-  } catch (error: any) {
-    console.error('Create task error:', error.response?.data)
-    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to create task'
-    throw new Error(errorMessage)
+export const updateTask = (id: string, formData: FormData) => {
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   }
+  return api.put(`/tasks/${id}`, formData, config)
 }
+export const deleteTask = (id: string) => api.delete(`/tasks/${id}`)
 
-export const updateTask = async (id: string, data: FormData) => {
-  try {
-    const res = await api.put(`/tasks/${id}`, data, {
-      headers: {
-        'Content-Type': undefined
-      }
-    })
-    return res.data
-  } catch (error: any) {
-    console.error('Update task error:', error.response?.data)
-    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to update task'
-    throw new Error(errorMessage)
-  }
-}
-
-export const deleteTask = async (id: string) => {
-  try {
-    const res = await api.delete(`/tasks/${id}`)
-    return res.data
-  } catch (error: any) {
-    console.error('Delete task error:', error.response?.data)
-    const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to delete task'
-    throw new Error(errorMessage)
-  }
-} 
+// Auth endpoints
+export const login = (data: { email: string; password: string }) => 
+  api.post('/auth/login', data)
+export const register = (data: { name: string; email: string; password: string }) => 
+  api.post('/auth/register', data)
+export const getCurrentUser = () => api.get('/auth/me') 
