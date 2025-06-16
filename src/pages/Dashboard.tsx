@@ -9,16 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import InputAdornment from '@mui/material/InputAdornment'
-
-interface Task {
-  _id: string
-  title: string
-  description: string
-  status: string
-  priority: string
-  dueDate?: string
-  image?: string
-}
+import { Task } from '../types'
 
 const statusOptions = ['All', 'Not Started', 'In Progress', 'Completed']
 const priorityOptions = ['All', 'High', 'Moderate', 'Low']
@@ -33,21 +24,16 @@ const Dashboard: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
-  const [editTask, setEditTask] = useState<Task | null>(null)
-  const [createLoading, setCreateLoading] = useState(false)
-  const [createError, setCreateError] = useState<string | null>(null)
+  const [openTaskForm, setOpenTaskForm] = useState(false)
+  const [openEditForm, setOpenEditForm] = useState(false)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [deleteLoading, setDeleteLoading] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState('All')
   const [priorityFilter, setPriorityFilter] = useState('All')
-  const [sortBy, setSortBy] = useState('dueDate')
-  const [search, setSearch] = useState('')
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
+  const [searchQuery, setSearchQuery] = useState('')
+  const [snackbar, setSnackbar] = useState<{ message: string; type: 'success' | 'error' }>({
     message: '',
-    severity: 'success'
+    type: 'success'
   })
   const navigate = useNavigate()
 
@@ -61,9 +47,8 @@ const Dashboard: React.FC = () => {
     } catch (err: any) {
       setError(err.message || 'Failed to load tasks')
       setSnackbar({
-        open: true,
         message: err.message || 'Failed to load tasks',
-        severity: 'error'
+        type: 'error'
       })
     } finally {
       setLoading(false)
@@ -80,110 +65,68 @@ const Dashboard: React.FC = () => {
 
   const handleCreateTask = async (formData: FormData) => {
     if (!token) return
-    setCreateLoading(true)
-    setCreateError(null)
     try {
       const response = await createTask(formData)
       if (response.data.task) {
-        setOpen(false)
+        setOpenTaskForm(false)
         fetchTasks()
         setSnackbar({
-          open: true,
           message: 'Task created successfully',
-          severity: 'success'
+          type: 'success'
         })
       } else {
         throw new Error('Invalid response from server')
       }
     } catch (err: any) {
-      setCreateError(err.message || 'Failed to create task')
       setSnackbar({
-        open: true,
         message: err.message || 'Failed to create task',
-        severity: 'error'
+        type: 'error'
       })
-    } finally {
-      setCreateLoading(false)
     }
   }
 
   const handleEditTask = (task: Task) => {
-    setEditTask(task)
-    setOpen(true)
+    setSelectedTask(task)
+    setOpenEditForm(true)
   }
 
   const handleUpdateTask = async (formData: FormData) => {
-    if (!token || !editTask) return
-    setCreateLoading(true)
-    setCreateError(null)
+    if (!token || !selectedTask) return
     try {
-      const response = await updateTask(editTask._id, formData)
+      const response = await updateTask(selectedTask._id, formData)
       if (response.data.task) {
-        setOpen(false)
-        setEditTask(null)
+        setOpenEditForm(false)
+        setSelectedTask(null)
         fetchTasks()
         setSnackbar({
-          open: true,
           message: 'Task updated successfully',
-          severity: 'success'
+          type: 'success'
         })
       } else {
         throw new Error('Invalid response from server')
       }
     } catch (err: any) {
-      setCreateError(err.message || 'Failed to update task')
       setSnackbar({
-        open: true,
         message: err.message || 'Failed to update task',
-        severity: 'error'
+        type: 'error'
       })
-    } finally {
-      setCreateLoading(false)
     }
   }
 
   const handleDeleteTask = async () => {
     if (!token || !deleteId) return
-    setDeleteLoading(true)
-    setDeleteError(null)
     try {
       await deleteTask(deleteId)
       setDeleteId(null)
       fetchTasks()
       setSnackbar({
-        open: true,
         message: 'Task deleted successfully',
-        severity: 'success'
+        type: 'success'
       })
     } catch (err: any) {
-      setDeleteError(err.message || 'Failed to delete task')
       setSnackbar({
-        open: true,
         message: err.message || 'Failed to delete task',
-        severity: 'error'
-      })
-    } finally {
-      setDeleteLoading(false)
-    }
-  }
-
-  const handleStatusToggle = async (task: Task) => {
-    if (!token) return
-    try {
-      const formData = new FormData()
-      formData.append('status', task.status === 'Completed' ? 'Not Started' : 'Completed')
-      await updateTask(task._id, formData)
-      fetchTasks()
-      setSnackbar({
-        open: true,
-        message: `Task marked as ${task.status === 'Completed' ? 'Not Started' : 'Completed'}`,
-        severity: 'success'
-      })
-    } catch (err: any) {
-      setSnackbar({
-        open: true,
-        message: err.message || 'Failed to update task status',
-        severity: 'error'
+        type: 'error'
       })
     }
   }
@@ -191,25 +134,9 @@ const Dashboard: React.FC = () => {
   const filteredTasks = tasks.filter(task => {
     const matchesStatus = statusFilter === 'All' || task.status === statusFilter
     const matchesPriority = priorityFilter === 'All' || task.priority === priorityFilter
-    const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase()) ||
-                         task.description.toLowerCase().includes(search.toLowerCase())
+    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (task.description || '').toLowerCase().includes(searchQuery.toLowerCase())
     return matchesStatus && matchesPriority && matchesSearch
-  })
-
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
-    switch (sortBy) {
-      case 'dueDate':
-        if (!a.dueDate) return 1
-        if (!b.dueDate) return -1
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-      case 'priority':
-        const priorityOrder = { High: 0, Moderate: 1, Low: 2 }
-        return priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder]
-      case 'title':
-        return a.title.localeCompare(b.title)
-      default:
-        return 0
-    }
   })
 
   if (!user) return null
@@ -225,7 +152,7 @@ const Dashboard: React.FC = () => {
         }}>
           <Button
             variant="contained"
-            onClick={() => setOpen(true)}
+            onClick={() => setOpenTaskForm(true)}
             startIcon={<AddIcon />}
             fullWidth={false}
             sx={{ 
@@ -248,7 +175,7 @@ const Dashboard: React.FC = () => {
                 label="Status"
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
-                <MenuItem value="all">All</MenuItem>
+                <MenuItem value="All">All</MenuItem>
                 <MenuItem value="Not Started">Not Started</MenuItem>
                 <MenuItem value="In Progress">In Progress</MenuItem>
                 <MenuItem value="Completed">Completed</MenuItem>
@@ -261,7 +188,7 @@ const Dashboard: React.FC = () => {
                 label="Priority"
                 onChange={(e) => setPriorityFilter(e.target.value)}
               >
-                <MenuItem value="all">All</MenuItem>
+                <MenuItem value="All">All</MenuItem>
                 <MenuItem value="High">High</MenuItem>
                 <MenuItem value="Moderate">Moderate</MenuItem>
                 <MenuItem value="Low">Low</MenuItem>
@@ -272,8 +199,8 @@ const Dashboard: React.FC = () => {
 
         <TextField
           label="Search Tasks"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           fullWidth
           InputProps={{
             startAdornment: (
@@ -308,29 +235,30 @@ const Dashboard: React.FC = () => {
       </Stack>
 
       <TaskForm
-        open={open}
-        onClose={() => setOpen(false)}
+        open={openTaskForm}
+        onClose={() => setOpenTaskForm(false)}
         onSubmit={handleCreateTask}
-        loading={createLoading}
+        loading={loading}
         submitLabel="Create Task"
       />
 
       <TaskForm
-        open={!!deleteId}
-        onClose={() => setDeleteId(null)}
-        onSubmit={handleDeleteTask}
-        loading={deleteLoading}
-        submitLabel="Delete Task"
+        open={openEditForm}
+        onClose={() => setOpenEditForm(false)}
+        onSubmit={handleUpdateTask}
+        loading={loading}
+        submitLabel="Update Task"
+        initial={selectedTask || undefined}
       />
 
       <Snackbar
-        open={snackbar.open}
+        open={!!snackbar.message}
         autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        onClose={() => setSnackbar({ message: '', type: 'success' })}
       >
         <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
-          severity={snackbar.severity}
+          onClose={() => setSnackbar({ message: '', type: 'success' })} 
+          severity={snackbar.type}
           sx={{ width: '100%' }}
         >
           {snackbar.message}
