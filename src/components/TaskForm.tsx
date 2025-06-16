@@ -19,7 +19,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { Close as CloseIcon } from '@mui/icons-material';
 import type { SelectChangeEvent } from '@mui/material';
-import { Task } from '../types';
+import type { Task } from '../types';
 
 interface TaskFormProps {
   open: boolean;

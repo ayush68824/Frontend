@@ -9,7 +9,7 @@ import {
   Stack,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { Task } from '../types';
+import type { Task } from '../types';
 
 interface TaskCardProps {
   task: Task;

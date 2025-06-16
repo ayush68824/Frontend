@@ -9,7 +9,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import InputAdornment from '@mui/material/InputAdornment'
-import { Task } from '../types'
+import type { Task } from '../types'
+import TaskCard from '../components/TaskCard'
 
 const statusOptions = ['All', 'Not Started', 'In Progress', 'Completed']
 const priorityOptions = ['All', 'High', 'Moderate', 'Low']
@@ -22,7 +23,7 @@ const sortOptions = [
 const Dashboard: React.FC = () => {
   const { token, user } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [openTaskForm, setOpenTaskForm] = useState(false)
   const [openEditForm, setOpenEditForm] = useState(false)
@@ -31,9 +32,14 @@ const Dashboard: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('All')
   const [priorityFilter, setPriorityFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
-  const [snackbar, setSnackbar] = useState<{ message: string; type: 'success' | 'error' }>({
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
     message: '',
-    type: 'success'
+    severity: 'success'
   })
   const navigate = useNavigate()
 
@@ -47,8 +53,9 @@ const Dashboard: React.FC = () => {
     } catch (err: any) {
       setError(err.message || 'Failed to load tasks')
       setSnackbar({
+        open: true,
         message: err.message || 'Failed to load tasks',
-        type: 'error'
+        severity: 'error'
       })
     } finally {
       setLoading(false)
@@ -71,16 +78,18 @@ const Dashboard: React.FC = () => {
         setOpenTaskForm(false)
         fetchTasks()
         setSnackbar({
+          open: true,
           message: 'Task created successfully',
-          type: 'success'
+          severity: 'success'
         })
       } else {
         throw new Error('Invalid response from server')
       }
     } catch (err: any) {
       setSnackbar({
+        open: true,
         message: err.message || 'Failed to create task',
-        type: 'error'
+        severity: 'error'
       })
     }
   }
@@ -99,16 +108,18 @@ const Dashboard: React.FC = () => {
         setSelectedTask(null)
         fetchTasks()
         setSnackbar({
+          open: true,
           message: 'Task updated successfully',
-          type: 'success'
+          severity: 'success'
         })
       } else {
         throw new Error('Invalid response from server')
       }
     } catch (err: any) {
       setSnackbar({
+        open: true,
         message: err.message || 'Failed to update task',
-        type: 'error'
+        severity: 'error'
       })
     }
   }
@@ -120,13 +131,15 @@ const Dashboard: React.FC = () => {
       setDeleteId(null)
       fetchTasks()
       setSnackbar({
+        open: true,
         message: 'Task deleted successfully',
-        type: 'success'
+        severity: 'success'
       })
     } catch (err: any) {
       setSnackbar({
+        open: true,
         message: err.message || 'Failed to delete task',
-        type: 'error'
+        severity: 'error'
       })
     }
   }
@@ -252,13 +265,13 @@ const Dashboard: React.FC = () => {
       />
 
       <Snackbar
-        open={!!snackbar.message}
+        open={snackbar.open}
         autoHideDuration={6000}
-        onClose={() => setSnackbar({ message: '', type: 'success' })}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
       >
         <Alert 
-          onClose={() => setSnackbar({ message: '', type: 'success' })} 
-          severity={snackbar.type}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
+          severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
           {snackbar.message}
