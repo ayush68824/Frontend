@@ -54,19 +54,19 @@ const TaskForm: React.FC<TaskFormProps> = ({
       return
     }
 
-    const formData = new FormData()
-    formData.append('title', title.trim())
-    formData.append('description', description.trim())
-    formData.append('status', status)
-    formData.append('priority', priority)
-    if (dueDate) {
-      formData.append('dueDate', dueDate.toISOString())
-    }
-    if (image) {
-      formData.append('image', image)
-    }
-
     try {
+      const formData = new FormData()
+      formData.append('title', title.trim())
+      formData.append('description', description.trim())
+      formData.append('status', status)
+      formData.append('priority', priority)
+      if (dueDate) {
+        formData.append('dueDate', dueDate.toISOString())
+      }
+      if (image) {
+        formData.append('image', image)
+      }
+
       await onSubmit(formData)
     } catch (err: any) {
       setError(err.message || 'Failed to submit task')
@@ -108,6 +108,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             fullWidth
             required
             error={!!error}
+            helperText={error}
           />
           <TextField
             label="Description"
@@ -174,7 +175,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
               </Box>
             )}
           </Box>
-          {error && <Alert severity="error">{error}</Alert>}
         </Stack>
       </DialogContent>
       <DialogActions>
