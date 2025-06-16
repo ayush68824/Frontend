@@ -6,7 +6,6 @@ import {
   Typography,
   IconButton,
   Chip,
-  Box,
   Stack,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
