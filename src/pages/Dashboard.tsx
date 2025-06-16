@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getTasks, createTask, updateTask, deleteTask } from '../utils/api'
-import { CircularProgress, Box, Alert, Button, FormControl, InputLabel, TextField, Stack, Snackbar, Select, MenuItem, Grid, Avatar, Card, CardContent, Typography, Paper } from '@mui/material'
+import { getTasks, createTask, updateTask } from '../utils/api'
+import { CircularProgress, Box, Alert, Button, Stack, Snackbar, Grid, Avatar, Card, CardContent, Typography, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
 import AddIcon from '@mui/icons-material/Add'
@@ -29,8 +29,6 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [openTaskForm, setOpenTaskForm] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
-  const [statusFilter, setStatusFilter] = useState<typeof statusOptions[number]>('All')
-  const [priorityFilter, setPriorityFilter] = useState<typeof priorityOptions[number]>('All')
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -124,12 +122,6 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesStatus = statusFilter === 'All' || task.status === statusFilter
-    const matchesPriority = priorityFilter === 'All' || task.priority === priorityFilter
-    return matchesStatus && matchesPriority
-  })
-
   if (!user) return null
 
   return (
@@ -185,13 +177,13 @@ const Dashboard: React.FC = () => {
           </Box>
         ) : error ? (
           <Alert severity="error">{error}</Alert>
-        ) : filteredTasks.length === 0 ? (
+        ) : tasks.length === 0 ? (
           <Typography variant="body1" textAlign="center" color="text.secondary">
             No tasks found
           </Typography>
         ) : (
           <Grid container spacing={2}>
-            {filteredTasks.map(task => (
+            {tasks.map(task => (
               <Grid item xs={12} md={6} lg={4} key={task._id}>
                 <TaskCard
                   task={task}
