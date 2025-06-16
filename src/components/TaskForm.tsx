@@ -1,20 +1,25 @@
-import React, { useState } from 'react'
-import { 
-  DialogContent, 
-  DialogActions, 
-  TextField, 
-  Button, 
-  CircularProgress,
-  Alert,
-  Stack,
-  FormControl,
-  InputLabel,
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
   Select,
   MenuItem,
-  Box
-} from '@mui/material'
-import { DateTimePicker } from '@mui/x-date-pickers'
-import type { SelectChangeEvent } from '@mui/material'
+  FormControl,
+  InputLabel,
+  Box,
+  Typography,
+  IconButton,
+  CircularProgress,
+  Stack,
+} from '@mui/material';
+import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
+import { Close as CloseIcon } from '@mui/icons-material';
+import type { SelectChangeEvent } from '@mui/material';
+import { Task } from '../types';
 
 interface TaskFormProps {
   initial?: {
