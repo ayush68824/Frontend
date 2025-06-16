@@ -1,23 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getTasks, createTask, updateTask } from '../utils/api'
-import { CircularProgress, Box, Alert, Button, Stack, Snackbar, Grid, Avatar, Card, CardContent, Typography, Paper } from '@mui/material'
+import { CircularProgress, Box, Alert, Button, Stack, Snackbar, Grid, Avatar, Typography, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
 import AddIcon from '@mui/icons-material/Add'
 import type { Task } from '../types'
 import TaskCard from '../components/TaskCard'
-import WorkIcon from '@mui/icons-material/Work';
-import SchoolIcon from '@mui/icons-material/School';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
-import DesignServicesIcon from '@mui/icons-material/DesignServices';
-
-const categoryData = [
-  { label: 'Design', icon: <DesignServicesIcon />, color: '#ffb74d' },
-  { label: 'Meeting', icon: <MeetingRoomIcon />, color: '#64b5f6' },
-  { label: 'Learning', icon: <SchoolIcon />, color: '#81c784' },
-  { label: 'Work', icon: <WorkIcon />, color: '#e57373' },
-];
 
 const Dashboard: React.FC = () => {
   const { token, user } = useAuth()
@@ -122,52 +111,29 @@ const Dashboard: React.FC = () => {
   if (!user) return null
 
   return (
-    <Box sx={{ p: 4, background: 'linear-gradient(135deg, #7b2ff2 0%, #f357a8 100%)', minHeight: '100vh' }}>
-      {/* Header */}
-      <Grid container spacing={4} alignItems="center" justifyContent="space-between" sx={{ mb: 4 }}>
-        <Grid item>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Avatar src={user.photo} alt={user.name} sx={{ width: 56, height: 56 }} />
-            <Box>
-              <Typography variant="h5" color="#fff">Hello!</Typography>
-              <Typography variant="h4" fontWeight={700} color="#fff">{user.name}</Typography>
-            </Box>
-          </Stack>
-        </Grid>
-        <Grid item>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setSelectedTask(null)
-              setOpenTaskForm(true)
-            }}
-            sx={{ fontWeight: 600, fontSize: 18, px: 4, py: 1.5, borderRadius: 3, background: '#fff', color: '#7b2ff2', boxShadow: 2 }}
-          >
-            Add Task
-          </Button>
-        </Grid>
-      </Grid>
+    <Box sx={{ p: 4, background: '#f8f6fa', minHeight: '100vh' }}>
+      <Paper elevation={2} sx={{ borderRadius: 4, p: 3, mb: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
+        <Avatar src={user.photo} alt={user.name} sx={{ width: 64, height: 64 }} />
+        <Box>
+          <Typography variant="h5" fontWeight={700} color="#333">Hi, {user.name}</Typography>
+          <Typography variant="body1" color="#888">Welcome back! Here are your tasks.</Typography>
+        </Box>
+        <Box flexGrow={1} />
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            setSelectedTask(null)
+            setOpenTaskForm(true)
+          }}
+          sx={{ fontWeight: 600, fontSize: 16, px: 4, py: 1.5, borderRadius: 3 }}
+        >
+          Add Task
+        </Button>
+      </Paper>
 
-      {/* Category Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {categoryData.map((cat) => (
-          <Grid item xs={12} sm={6} md={3} key={cat.label}>
-            <Card sx={{ background: cat.color, color: '#fff', borderRadius: 4, boxShadow: 3 }}>
-              <CardContent>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  {cat.icon}
-                  <Typography variant="h6" fontWeight={600}>{cat.label}</Typography>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Today's Tasks */}
-      <Paper elevation={3} sx={{ borderRadius: 4, p: 3, mb: 4, background: '#fff' }}>
-        <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }} color="#7b2ff2">Today's Tasks</Typography>
+      <Paper elevation={1} sx={{ borderRadius: 4, p: 3, background: '#fff' }}>
+        <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }} color="#7b2ff2">Your Tasks</Typography>
         {loading ? (
           <Box display="flex" justifyContent="center" p={3}>
             <CircularProgress />
@@ -191,15 +157,6 @@ const Dashboard: React.FC = () => {
             ))}
           </Grid>
         )}
-      </Paper>
-
-      {/* Progress/Graph Section Placeholder */}
-      <Paper elevation={3} sx={{ borderRadius: 4, p: 3, background: '#fff' }}>
-        <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }} color="#7b2ff2">Progress Overview</Typography>
-        <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa' }}>
-          {/* You can integrate a chart library here, e.g., recharts, chart.js, etc. */}
-          <Typography variant="body1">[Graph/Progress Visualization Placeholder]</Typography>
-        </Box>
       </Paper>
 
       <TaskForm

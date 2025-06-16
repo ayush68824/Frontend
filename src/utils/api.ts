@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = 'http://localhost:5000/api'
+const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
 
 // Create axios instance with default config
 const api = axios.create({
@@ -29,13 +29,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+    if (error.response) {
+      // Server responded with a status other than 2xx
+      return Promise.reject(error.response.data.message || error.response.data || error.message);
+    } else if (error.request) {
+      // Request was made but no response received
+      return Promise.reject('No response from server. Please check your network connection.');
+    } else {
+      // Something else happened
+      return Promise.reject(error.message);
     }
-    return Promise.reject(error)
   }
 )
 
