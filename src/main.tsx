@@ -8,6 +8,8 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { AuthProvider } from './context/AuthContext'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 
 const theme = createTheme({
   palette: {
@@ -22,12 +24,18 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <GoogleOAuthProvider clientId="665955875780-4956p9i9u01rqi0rhmqe7nnge992mbpc.apps.googleusercontent.com">
-        <AuthProvider>
-          <App />
-          <ToastContainer position="top-right" autoClose={3000} />
-        </AuthProvider>
-      </GoogleOAuthProvider>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <GoogleOAuthProvider 
+          clientId="665955875780-4956p9i9u01rqi0rhmqe7nnge992mbpc.apps.googleusercontent.com"
+          onScriptLoadSuccess={() => console.log('Google OAuth script loaded successfully')}
+          onScriptLoadError={() => console.error('Google OAuth script failed to load')}
+        >
+          <AuthProvider>
+            <App />
+            <ToastContainer position="top-right" autoClose={3000} />
+          </AuthProvider>
+        </GoogleOAuthProvider>
+      </LocalizationProvider>
     </ThemeProvider>
   </StrictMode>,
 )
