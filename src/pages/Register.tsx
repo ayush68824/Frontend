@@ -159,9 +159,7 @@ const Register: React.FC = () => {
           />
         </Box>
         <Box sx={{ mt: 2, textAlign: 'center' }}>
-          <Link href="/login" variant="body2">
-            Already have an account? Sign in
-          </Link>
+          {/* Removed Sign In link from registration form as per requirements */}
         </Box>
       </StyledPaper>
     </Container>

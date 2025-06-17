@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 
 const navItems = [
   { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { label: 'My Tasks', icon: <ListAltIcon />, path: '/dashboard?tab=my-tasks' },
+  { label: 'My Tasks', icon: <ListAltIcon />, path: '/my-tasks' },
   { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
 ]
 

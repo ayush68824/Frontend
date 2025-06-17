@@ -143,10 +143,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
             label="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            margin="normal"
             required
             error={!!error}
             helperText={error}
             disabled={isSubmitting}
+            sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
@@ -156,8 +158,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
             multiline
             rows={3}
             disabled={isSubmitting}
+            sx={{ mb: 2 }}
           />
-          <FormControl fullWidth>
+          <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Status</InputLabel>
             <Select
               value={status}
@@ -170,7 +173,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               <MenuItem value="Completed">Completed</MenuItem>
             </Select>
           </FormControl>
-          <FormControl fullWidth>
+          <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Priority</InputLabel>
             <Select
               value={priority}
@@ -191,12 +194,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
               slotProps={{ 
                 textField: { 
                   fullWidth: true,
-                  disabled: isSubmitting
+                  disabled: isSubmitting,
+                  sx: { mb: 2 }
                 } 
               }}
             />
           </LocalizationProvider>
-          <Box>
+          <Box sx={{ mb: 2 }}>
             <Button
               variant="outlined"
               component="label"

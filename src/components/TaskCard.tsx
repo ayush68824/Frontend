@@ -101,7 +101,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
             }
           }}
         >
-          <img src={task.image} alt={task.title} />
+          <img src={task.image.startsWith('http') ? task.image : `${import.meta.env.VITE_API_URL?.replace('/api','') || ''}${task.image}`}
+               alt={task.title} />
         </Box>
       )}
       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
