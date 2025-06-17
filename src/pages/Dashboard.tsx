@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getTasks, createTask, updateTask } from '../utils/api'
-import { CircularProgress, Box, Alert, Button, Snackbar, Grid, Avatar, Typography, Paper } from '@mui/material'
+import { CircularProgress, Box, Alert, Button, Snackbar, Grid, Typography, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
 import AddIcon from '@mui/icons-material/Add'
@@ -40,7 +40,8 @@ const Dashboard: React.FC = () => {
     setLoading(true)
     try {
       const response = await getTasks()
-      setTasks(response.data.tasks || response.data)
+      const data = response.data?.tasks ?? response.data ?? [];
+      setTasks(Array.isArray(data) ? data : []);
       setError(null)
     } catch (err: any) {
       setError(err.message || 'Failed to load tasks')
@@ -112,28 +113,21 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box sx={{ p: 4, background: '#f8f6fa', minHeight: '100vh' }}>
-      <Paper elevation={2} sx={{ borderRadius: 4, p: 3, mb: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
-        <Avatar src={user.photo} alt={user.name} sx={{ width: 64, height: 64 }} />
-        <Box>
-          <Typography variant="h5" fontWeight={700} color="#333">Hi, {user.name}</Typography>
-          <Typography variant="body1" color="#888">Welcome back! Here are your tasks.</Typography>
+      <Paper elevation={1} sx={{ borderRadius: 4, p: 3, background: '#fff', mb: 4 }}>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Typography variant="h6" fontWeight={700} color="#7b2ff2">Your Tasks</Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setSelectedTask(null)
+              setOpenTaskForm(true)
+            }}
+            sx={{ fontWeight: 600, fontSize: 16, px: 4, py: 1.5, borderRadius: 3 }}
+          >
+            Add Task
+          </Button>
         </Box>
-        <Box flexGrow={1} />
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setSelectedTask(null)
-            setOpenTaskForm(true)
-          }}
-          sx={{ fontWeight: 600, fontSize: 16, px: 4, py: 1.5, borderRadius: 3 }}
-        >
-          Add Task
-        </Button>
-      </Paper>
-
-      <Paper elevation={1} sx={{ borderRadius: 4, p: 3, background: '#fff' }}>
-        <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }} color="#7b2ff2">Your Tasks</Typography>
         {loading ? (
           <Box display="flex" justifyContent="center" p={3}>
             <CircularProgress />
@@ -145,7 +139,7 @@ const Dashboard: React.FC = () => {
             No tasks found
           </Typography>
         ) : (
-          <Grid container spacing={2}>
+          <Grid container spacing={2} sx={{ mt: 2 }}>
             {tasks.map(task => (
               <Grid item xs={12} md={6} lg={4} key={task._id}>
                 <TaskCard
