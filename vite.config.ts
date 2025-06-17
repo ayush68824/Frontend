@@ -16,6 +16,17 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     minify: 'terser',
-    chunkSizeWarningLimit: 1600
+    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          mui: ['@mui/material', '@mui/icons-material'],
+        },
+      },
+    },
+  },
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
   }
 })

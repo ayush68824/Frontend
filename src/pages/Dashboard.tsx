@@ -5,16 +5,8 @@ import { CircularProgress, Box, Alert, Button, Snackbar, Grid, Typography, Paper
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm'
 import AddIcon from '@mui/icons-material/Add'
-import type { Task } from '../types'
+import type { Task } from '../utils/api'
 import TaskCard from '../components/TaskCard'
-
-interface TaskData {
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  dueDate?: string;
-}
 
 const Dashboard: React.FC = () => {
   const { token, user } = useAuth()
@@ -40,16 +32,14 @@ const Dashboard: React.FC = () => {
       return
     }
     fetchTasks()
-    // eslint-disable-next-line
   }, [token, navigate])
 
   const fetchTasks = async () => {
     if (!token) return
     setLoading(true)
     try {
-      const response = await getTasks()
-      const data = response.data?.tasks ?? response.data ?? [];
-      setTasks(Array.isArray(data) ? data : []);
+      const data = await getTasks()
+      setTasks(Array.isArray(data) ? data : [])
       setError(null)
     } catch (err: any) {
       setError(err.message || 'Failed to load tasks')
@@ -63,23 +53,25 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  const handleCreateTask = async (taskData: {
-    title: string;
-    description: string;
-    status: string;
-    priority: string;
-    dueDate?: string;
-  }) => {
+  const handleCreateTask = async (formData: FormData) => {
     try {
-      console.log('Creating task with data:', taskData);
-      await createTask(taskData);
-      await fetchTasks();
-      setOpenTaskForm(false);
+      await createTask(formData)
+      await fetchTasks()
+      setOpenTaskForm(false)
+      setSnackbar({
+        open: true,
+        message: 'Task created successfully',
+        severity: 'success'
+      })
     } catch (error: any) {
-      console.error('Error in handleCreateTask:', error);
-      setError(error.message || 'Failed to create task');
+      setError(error.message || 'Failed to create task')
+      setSnackbar({
+        open: true,
+        message: error.message || 'Failed to create task',
+        severity: 'error'
+      })
     }
-  };
+  }
 
   const handleEditTask = (task: Task) => {
     setSelectedTask(task)
@@ -89,19 +81,15 @@ const Dashboard: React.FC = () => {
   const handleUpdateTask = async (formData: FormData) => {
     if (!token || !selectedTask) return
     try {
-      const response = await updateTask(selectedTask._id, formData)
-      if (response.data.task) {
-        setOpenTaskForm(false)
-        setSelectedTask(null)
-        fetchTasks()
-        setSnackbar({
-          open: true,
-          message: 'Task updated successfully',
-          severity: 'success'
-        })
-      } else {
-        throw new Error('Invalid response from server')
-      }
+      await updateTask(selectedTask._id, formData)
+      setOpenTaskForm(false)
+      setSelectedTask(null)
+      fetchTasks()
+      setSnackbar({
+        open: true,
+        message: 'Task updated successfully',
+        severity: 'success'
+      })
     } catch (err: any) {
       setSnackbar({
         open: true,
@@ -115,7 +103,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box sx={{ p: 4, background: '#f8f6fa', minHeight: '100vh' }}>
-      <Paper elevation={1} sx={{ borderRadius: 4, p: 3, background: '#fff', mb: 4 }}>
+      <Paper sx={{ p: 3, borderRadius: 2 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6" fontWeight={700} color="#7b2ff2">Your Tasks</Typography>
           <Button
@@ -161,7 +149,7 @@ const Dashboard: React.FC = () => {
           setOpenTaskForm(false)
           setSelectedTask(null)
         }}
-        initial={selectedTask || undefined}
+        initialData={selectedTask || undefined}
         onSubmit={selectedTask ? handleUpdateTask : handleCreateTask}
         submitLabel={selectedTask ? 'Update' : 'Create'}
       />
@@ -169,11 +157,12 @@ const Dashboard: React.FC = () => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
         <Alert
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
+          sx={{ width: '100%' }}
         >
           {snackbar.message}
         </Alert>

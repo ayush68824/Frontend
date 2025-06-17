@@ -41,7 +41,7 @@ api.interceptors.response.use(
   }
 )
 
-interface Task {
+export interface Task {
   _id: string;
   title: string;
   description: string;
@@ -63,7 +63,7 @@ interface TaskData {
 }
 
 // Task endpoints
-export const getTasks = async () => {
+export const getTasks = async (): Promise<Task[]> => {
   try {
     const response = await api.get('/tasks')
     return response.data
@@ -75,77 +75,36 @@ export const getTasks = async () => {
 
 export const createTask = async (formData: FormData): Promise<Task> => {
   try {
-    // Get the auth token
-    const token = localStorage.getItem('token');
-    console.log('=== API REQUEST DEBUG ===');
-    console.log('Auth token present:', !!token);
-    console.log('Auth token:', token ? token.substring(0, 10) + '...' : 'none');
-
+    const token = localStorage.getItem('token')
     if (!token) {
-      throw new Error('No authentication token found. Please log in.');
+      throw new Error('No authentication token found. Please log in.')
     }
 
-    // Log the complete request details
-    console.log('=== REQUEST DETAILS ===');
-    console.log('URL:', `${API_URL}/tasks`);
-    console.log('Method:', 'POST');
-    console.log('Headers:', {
-      'Authorization': 'Bearer [REDACTED]'
-    });
-    console.log('FormData contents:');
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}: ${value instanceof File ? value.name : value}`);
-    }
-    console.log('=====================');
-
-    // Make the request using fetch for better FormData handling
     const response = await fetch(`${API_URL}/tasks`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
       },
       body: formData
-    });
-
-    // Log response details
-    console.log('=== RESPONSE DETAILS ===');
-    console.log('Status:', response.status);
-    console.log('Status Text:', response.statusText);
-    console.log('Headers:', Object.fromEntries(response.headers.entries()));
-
-    // Try to parse the response body
-    const responseData = await response.json().catch(() => null);
-    console.log('Response Data:', responseData);
-    console.log('=====================');
+    })
 
     if (!response.ok) {
-      const errorMessage = responseData?.error || responseData?.details || `HTTP error! status: ${response.status}`;
-      console.error('API Error:', {
-        status: response.status,
-        statusText: response.statusText,
-        message: errorMessage,
-        data: responseData
-      });
-      throw new Error(errorMessage);
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to create task')
     }
 
-    console.log('=== API REQUEST SUCCESS ===');
-    return responseData;
+    return await response.json()
   } catch (error: any) {
-    console.error('=== API REQUEST ERROR ===');
-    console.error('Error details:', {
-      message: error.message,
-      error: error
-    });
-    throw new Error(error.message || 'Failed to create task. Please check your input and try again.');
+    console.error('Error creating task:', error)
+    throw new Error(error.message || 'Failed to create task')
   }
-};
+}
 
 export const updateTask = async (id: string, formData: FormData): Promise<Task> => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token')
     if (!token) {
-      throw new Error('No authentication token found. Please log in.');
+      throw new Error('No authentication token found. Please log in.')
     }
 
     const response = await fetch(`${API_URL}/tasks/${id}`, {
@@ -154,28 +113,28 @@ export const updateTask = async (id: string, formData: FormData): Promise<Task> 
         'Authorization': `Bearer ${token}`
       },
       body: formData
-    });
+    })
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to update task');
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to update task')
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error: any) {
-    console.error('Error updating task:', error);
-    throw new Error(error.message || 'Failed to update task');
+    console.error('Error updating task:', error)
+    throw new Error(error.message || 'Failed to update task')
   }
-};
+}
 
 export const deleteTask = async (id: string): Promise<void> => {
   try {
-    await api.delete(`/tasks/${id}`);
+    await api.delete(`/tasks/${id}`)
   } catch (error: any) {
-    console.error('Error deleting task:', error);
-    throw new Error(error.response?.data?.message || 'Failed to delete task');
+    console.error('Error deleting task:', error)
+    throw new Error(error.response?.data?.message || 'Failed to delete task')
   }
-};
+}
 
 // Auth endpoints
 export const login = async (email: string, password: string) => {

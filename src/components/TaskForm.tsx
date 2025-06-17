@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   TextField,
   Button,
   Select,
@@ -11,14 +10,11 @@ import {
   FormControl,
   InputLabel,
   Box,
-  Stack,
   CircularProgress,
   IconButton,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Close as CloseIcon } from '@mui/icons-material';
-import type { SelectChangeEvent } from '@mui/material';
-import type { Task } from '../types';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
@@ -57,25 +53,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Debug: Log form state
-    console.log('=== FORM SUBMISSION DEBUG ===');
-    console.log('Form State:', {
-      title,
-      description,
-      status,
-      priority,
-      dueDate: dueDate?.toISOString(),
-      image: image ? 'Image present' : 'No image'
-    });
-
-    // Validate required fields
     if (!title.trim()) {
       setError('Title is required');
       return;
     }
 
     try {
-      // Create FormData object
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('description', description.trim());
@@ -88,19 +71,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
         formData.append('image', image);
       }
 
-      // Debug: Log FormData contents
-      console.log('FormData contents:');
-      for (const [key, value] of formData.entries()) {
-        console.log(`${key}: ${value instanceof File ? value.name : value}`);
-      }
-
-      // Submit the task
       await onSubmit(formData);
       
-      // Debug: Log success
-      console.log('Task submitted successfully');
-      
-      // Reset form
       setTitle('');
       setDescription('');
       setStatus('Not Started');
@@ -111,11 +83,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
       setError('');
       onClose();
     } catch (error: any) {
-      // Debug: Log error details
-      console.error('Task submission error:', {
-        message: error.message,
-        error: error
-      });
       setError(error.message || 'Failed to create task');
     }
   };

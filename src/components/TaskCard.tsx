@@ -2,14 +2,21 @@ import React from 'react';
 import {
   Card,
   CardContent,
-  CardActions,
   Typography,
-  IconButton,
+  Box,
   Chip,
-  Stack,
+  IconButton,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import type { Task } from '../types';
+import { MoreVert as MoreVertIcon } from '@mui/icons-material';
+import { format } from 'date-fns';
+import type { Task } from '../utils/api';
 
 interface TaskCardProps {
   task: Task;
@@ -18,72 +25,152 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
-  return (
-    <Card 
-      sx={{ 
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        '&:hover': {
-          boxShadow: 6,
-        },
-      }}
-    >
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" gutterBottom>
-          {task.title}
-        </Typography>
-        
-        {task.description && (
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
-            sx={{ 
-              mb: 2,
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {task.description}
-          </Typography>
-        )}
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
-        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    handleMenuClose();
+    onEdit();
+  };
+
+  const handleDeleteClick = () => {
+    handleMenuClose();
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    setDeleteDialogOpen(false);
+    onDelete();
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return '#f44336';
+      case 'moderate':
+        return '#ff9800';
+      case 'low':
+        return '#4caf50';
+      default:
+        return '#757575';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return '#4caf50';
+      case 'in progress':
+        return '#2196f3';
+      case 'not started':
+        return '#757575';
+      default:
+        return '#757575';
+    }
+  };
+
+  return (
+    <Card sx={{ 
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      transition: 'transform 0.2s, box-shadow 0.2s',
+      '&:hover': {
+        transform: 'translateY(-4px)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+      }
+    }}>
+      {task.image && (
+        <Box
+          sx={{
+            height: 200,
+            overflow: 'hidden',
+            position: 'relative',
+            '& img': {
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
+            }
+          }}
+        >
+          <img src={task.image} alt={task.title} />
+        </Box>
+      )}
+      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+          <Typography variant="h6" component="div" gutterBottom>
+            {task.title}
+          </Typography>
+          <IconButton size="small" onClick={handleMenuOpen}>
+            <MoreVertIcon />
+          </IconButton>
+        </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flexGrow: 1 }}>
+          {task.description}
+        </Typography>
+        <Box display="flex" gap={1} flexWrap="wrap" sx={{ mb: 1 }}>
           <Chip
             label={task.priority}
             size="small"
-            color={
-              task.priority === 'High' ? 'error' :
-              task.priority === 'Moderate' ? 'warning' : 'success'
-            }
+            sx={{
+              backgroundColor: getPriorityColor(task.priority),
+              color: 'white',
+              fontWeight: 500
+            }}
           />
           <Chip
             label={task.status}
             size="small"
-            color={
-              task.status === 'Completed' ? 'success' :
-              task.status === 'In Progress' ? 'warning' : 'default'
-            }
+            sx={{
+              backgroundColor: getStatusColor(task.status),
+              color: 'white',
+              fontWeight: 500
+            }}
           />
-        </Stack>
-
+        </Box>
         {task.dueDate && (
           <Typography variant="caption" color="text.secondary">
-            Due: {new Date(task.dueDate).toLocaleDateString()}
+            Due: {format(new Date(task.dueDate), 'MMM dd, yyyy')}
           </Typography>
         )}
       </CardContent>
 
-      <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-        <IconButton size="small" onClick={onEdit}>
-          <EditIcon />
-        </IconButton>
-        <IconButton size="small" onClick={onDelete}>
-          <DeleteIcon />
-        </IconButton>
-      </CardActions>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleEdit}>Edit</MenuItem>
+        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+          Delete
+        </MenuItem>
+      </Menu>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Task</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this task? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
