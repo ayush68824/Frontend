@@ -35,6 +35,9 @@ const Settings: React.FC = () => {
           setPhotoPreview(ev.target.result as string)
         }
       }
+      reader.onerror = () => {
+        setError('Failed to read image file')
+      }
       reader.readAsDataURL(file)
     }
   }
@@ -47,22 +50,43 @@ const Settings: React.FC = () => {
 
     try {
       const formData = new FormData()
-      formData.append('name', name)
+      if (name !== user.name) {
+        formData.append('name', name)
+      }
       if (photo) {
         formData.append('photo', photo)
       }
 
+      // Don't make the request if nothing has changed
+      if (formData.entries().next().done) {
+        setSuccess('No changes to update')
+        setLoading(false)
+        return
+      }
+
+      console.log('Sending profile update request...')
       const response = await axios.put(`${API_URL}/auth/profile`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          console.log('Upload progress:', percentCompleted)
         }
       })
 
+      if (!response.data.user) {
+        throw new Error('Invalid response from server')
+      }
+
       updateUser(response.data.user)
       setSuccess('Profile updated successfully')
+      setPhoto(null) // Clear the photo state after successful upload
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update profile')
+      console.error('Profile update error:', err)
+      const errorMessage = err.response?.data?.error || err.response?.data?.details || 'Failed to update profile'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
