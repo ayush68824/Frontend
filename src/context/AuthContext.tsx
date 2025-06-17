@@ -40,7 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const t = localStorage.getItem('token')
     const u = localStorage.getItem('user')
-    if (t && u) {
+    if (u === 'undefined' || u === null) {
+      localStorage.removeItem('user');
+    }
+    if (t && u && u !== 'undefined') {
       setToken(t)
       setUser(JSON.parse(u))
     }
