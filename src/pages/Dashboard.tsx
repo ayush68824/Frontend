@@ -58,9 +58,9 @@ const Dashboard: React.FC = () => {
   const handleCreateTask = async (formData: FormData) => {
     if (!token) return;
     try {
-      const response = await createTask(formData);
+      await createTask(formData);
       setOpenTaskForm(false);
-      fetchTasks();
+      await fetchTasks();
       setSnackbar({
         open: true,
         message: 'Task created successfully',
