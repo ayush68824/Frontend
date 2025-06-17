@@ -54,15 +54,38 @@ export const getTasks = async () => {
 
 export const createTask = async (formData: FormData) => {
   try {
-    const response = await api.post('/tasks', formData, {
+    // Convert FormData to a plain object for non-file fields
+    const taskData = {
+      title: formData.get('title'),
+      description: formData.get('description'),
+      status: formData.get('status'),
+      priority: formData.get('priority'),
+      dueDate: formData.get('dueDate')
+    };
+
+    // Create a new FormData instance for the request
+    const requestData = new FormData();
+    Object.entries(taskData).forEach(([key, value]) => {
+      if (value) {
+        requestData.append(key, value.toString());
+      }
+    });
+
+    // Add image if it exists
+    const image = formData.get('image');
+    if (image instanceof File) {
+      requestData.append('image', image);
+    }
+
+    const response = await api.post('/tasks', requestData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    })
-    return response.data
+    });
+    return response;
   } catch (error: any) {
-    console.error('Error creating task:', error)
-    throw new Error(error.response?.data?.message || 'Failed to create task')
+    console.error('Error creating task:', error);
+    throw new Error(error.response?.data?.message || 'Failed to create task');
   }
 }
 

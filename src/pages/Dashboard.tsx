@@ -56,28 +56,24 @@ const Dashboard: React.FC = () => {
   }
 
   const handleCreateTask = async (formData: FormData) => {
-    if (!token) return
+    if (!token) return;
     try {
-      const response = await createTask(formData)
-      if (response.data.task) {
-        setOpenTaskForm(false)
-        fetchTasks()
-        setSnackbar({
-          open: true,
-          message: 'Task created successfully',
-          severity: 'success'
-        })
-      } else {
-        throw new Error('Invalid response from server')
-      }
+      const response = await createTask(formData);
+      setOpenTaskForm(false);
+      fetchTasks();
+      setSnackbar({
+        open: true,
+        message: 'Task created successfully',
+        severity: 'success'
+      });
     } catch (err: any) {
       setSnackbar({
         open: true,
         message: err.message || 'Failed to create task',
         severity: 'error'
-      })
+      });
     }
-  }
+  };
 
   const handleEditTask = (task: Task) => {
     setSelectedTask(task)
