@@ -19,6 +19,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 interface TaskFormProps {
+  open: boolean;
   onSubmit: (taskData: FormData) => Promise<void>;
   onClose: () => void;
   initialData?: {
@@ -35,6 +36,7 @@ interface TaskFormProps {
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({
+  open,
   onSubmit,
   onClose,
   initialData = {},
@@ -118,7 +120,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
   return (
     <Dialog 
-      open={true} 
+      open={open} 
       onClose={isSubmitting ? undefined : onClose} 
       maxWidth="sm" 
       fullWidth

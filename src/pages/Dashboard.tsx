@@ -146,8 +146,8 @@ const Dashboard: React.FC = () => {
       <TaskForm
         open={openTaskForm}
         onClose={() => {
-          setOpenTaskForm(false)
-          setSelectedTask(null)
+          setOpenTaskForm(false);
+          setSelectedTask(null);
         }}
         initialData={selectedTask || undefined}
         onSubmit={selectedTask ? handleUpdateTask : handleCreateTask}
