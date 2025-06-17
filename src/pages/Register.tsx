@@ -52,8 +52,8 @@ const Register: React.FC = () => {
       }
       await register(formData)
       navigate('/dashboard')
-    } catch (err) {
-      setError('Registration failed')
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.response?.data?.details || err.message || 'Registration failed')
     } finally {
       setIsLoading(false)
     }

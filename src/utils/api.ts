@@ -129,10 +129,16 @@ export const updateTask = async (id: string, formData: FormData): Promise<Task> 
 
 export const deleteTask = async (id: string): Promise<void> => {
   try {
-    await api.delete(`/tasks/${id}`)
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No authentication token found. Please log in.');
+    await api.delete(`/tasks/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
   } catch (error: any) {
-    console.error('Error deleting task:', error)
-    throw new Error(error.response?.data?.message || 'Failed to delete task')
+    console.error('Error deleting task:', error);
+    throw new Error(error.response?.data?.message || 'Failed to delete task');
   }
 }
 
