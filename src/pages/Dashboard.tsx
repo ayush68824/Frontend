@@ -8,6 +8,14 @@ import AddIcon from '@mui/icons-material/Add'
 import type { Task } from '../types'
 import TaskCard from '../components/TaskCard'
 
+interface TaskData {
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  dueDate?: string;
+}
+
 const Dashboard: React.FC = () => {
   const { token, user } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
@@ -55,23 +63,21 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  const handleCreateTask = async (formData: FormData) => {
-    if (!token) return;
+  const handleCreateTask = async (taskData: {
+    title: string;
+    description: string;
+    status: string;
+    priority: string;
+    dueDate?: string;
+  }) => {
     try {
-      await createTask(formData);
-      setOpenTaskForm(false);
+      console.log('Creating task with data:', taskData);
+      await createTask(taskData);
       await fetchTasks();
-      setSnackbar({
-        open: true,
-        message: 'Task created successfully',
-        severity: 'success'
-      });
-    } catch (err: any) {
-      setSnackbar({
-        open: true,
-        message: err.message || 'Failed to create task',
-        severity: 'error'
-      });
+      setOpenTaskForm(false);
+    } catch (error: any) {
+      console.error('Error in handleCreateTask:', error);
+      setError(error.message || 'Failed to create task');
     }
   };
 

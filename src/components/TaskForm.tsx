@@ -19,59 +19,104 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { Close as CloseIcon } from '@mui/icons-material';
 import type { SelectChangeEvent } from '@mui/material';
 import type { Task } from '../types';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 interface TaskFormProps {
-  open: boolean;
+  onSubmit: (taskData: FormData) => Promise<void>;
   onClose: () => void;
-  initial?: Partial<Task>;
-  onSubmit: (formData: FormData) => Promise<void>;
+  initialData?: {
+    title?: string;
+    description?: string;
+    status?: string;
+    priority?: string;
+    dueDate?: string;
+    image?: string;
+    _id?: string;
+  };
   loading?: boolean;
   submitLabel?: string;
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({
-  open,
-  onClose,
-  initial = {},
   onSubmit,
+  onClose,
+  initialData = {},
   loading = false,
   submitLabel = 'Submit'
 }) => {
-  const [title, setTitle] = useState(initial.title || '');
-  const [description, setDescription] = useState(initial.description || '');
-  const [status, setStatus] = useState<'Not Started' | 'In Progress' | 'Completed'>(initial.status || 'Not Started');
-  const [priority, setPriority] = useState<'High' | 'Moderate' | 'Low'>(initial.priority || 'Moderate');
-  const [dueDate, setDueDate] = useState<Date | null>(initial.dueDate ? new Date(initial.dueDate) : null);
+  const [title, setTitle] = useState(initialData.title || '');
+  const [description, setDescription] = useState(initialData.description || '');
+  const [status, setStatus] = useState(initialData.status || 'Not Started');
+  const [priority, setPriority] = useState(initialData.priority || 'Moderate');
+  const [dueDate, setDueDate] = useState<Date | null>(initialData.dueDate ? new Date(initialData.dueDate) : null);
   const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(initial.image || null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData.image || null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    
+    // Debug: Log form state
+    console.log('=== FORM SUBMISSION DEBUG ===');
+    console.log('Form State:', {
+      title,
+      description,
+      status,
+      priority,
+      dueDate: dueDate?.toISOString(),
+      image: image ? 'Image present' : 'No image'
+    });
 
+    // Validate required fields
     if (!title.trim()) {
       setError('Title is required');
       return;
     }
 
     try {
+      // Create FormData object
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('description', description.trim());
       formData.append('status', status);
       formData.append('priority', priority);
       if (dueDate) {
-        formData.append('dueDate', dueDate.toISOString());
+        formData.append('dueDate', dueDate.toISOString().split('T')[0]);
       }
       if (image) {
         formData.append('image', image);
       }
 
+      // Debug: Log FormData contents
+      console.log('FormData contents:');
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}: ${value instanceof File ? value.name : value}`);
+      }
+
+      // Submit the task
       await onSubmit(formData);
+      
+      // Debug: Log success
+      console.log('Task submitted successfully');
+      
+      // Reset form
+      setTitle('');
+      setDescription('');
+      setStatus('Not Started');
+      setPriority('Moderate');
+      setDueDate(null);
+      setImage(null);
+      setImagePreview(null);
+      setError('');
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Failed to submit task');
+    } catch (error: any) {
+      // Debug: Log error details
+      console.error('Task submission error:', {
+        message: error.message,
+        error: error
+      });
+      setError(error.message || 'Failed to create task');
     }
   };
 
@@ -98,111 +143,103 @@ const TaskForm: React.FC<TaskFormProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {initial._id ? 'Edit Task' : 'Create Task'}
+        {initialData._id ? 'Edit Task' : 'Create Task'}
         <IconButton
           aria-label="close"
           onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-          }}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <form onSubmit={handleSubmit}>
-        <DialogContent>
-          <Stack spacing={3}>
-            <TextField
-              label="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              fullWidth
-              required
-              error={!!error}
-              helperText={error}
-            />
-            <TextField
-              label="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              fullWidth
-              multiline
-              rows={4}
-            />
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={status}
-                label="Status"
-                onChange={(e: SelectChangeEvent) => setStatus(e.target.value as 'Not Started' | 'In Progress' | 'Completed')}
-              >
-                <MenuItem value="Not Started">Not Started</MenuItem>
-                <MenuItem value="In Progress">In Progress</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Priority</InputLabel>
-              <Select
-                value={priority}
-                label="Priority"
-                onChange={(e: SelectChangeEvent) => setPriority(e.target.value as 'High' | 'Moderate' | 'Low')}
-              >
-                <MenuItem value="High">High</MenuItem>
-                <MenuItem value="Moderate">Moderate</MenuItem>
-                <MenuItem value="Low">Low</MenuItem>
-              </Select>
-            </FormControl>
+      <DialogContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <TextField
+            fullWidth
+            label="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            error={!!error}
+            helperText={error}
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            multiline
+            rows={3}
+          />
+          <FormControl fullWidth>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              label="Status"
+            >
+              <MenuItem value="Not Started">Not Started</MenuItem>
+              <MenuItem value="In Progress">In Progress</MenuItem>
+              <MenuItem value="Completed">Completed</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel>Priority</InputLabel>
+            <Select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              label="Priority"
+            >
+              <MenuItem value="Low">Low</MenuItem>
+              <MenuItem value="Moderate">Moderate</MenuItem>
+              <MenuItem value="High">High</MenuItem>
+            </Select>
+          </FormControl>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label="Due Date"
               value={dueDate}
               onChange={(newValue) => setDueDate(newValue)}
-              slotProps={{
-                textField: {
-                  fullWidth: true
-                }
-              }}
+              slotProps={{ textField: { fullWidth: true } }}
             />
-            <Box>
+          </LocalizationProvider>
+          <Box>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+            >
+              {imagePreview ? 'Change Image' : 'Upload Image'}
               <input
                 type="file"
+                hidden
                 accept="image/*"
                 onChange={handleImageChange}
-                style={{ display: 'none' }}
-                id="image-upload"
               />
-              <label htmlFor="image-upload">
-                <Button variant="outlined" component="span">
-                  Upload Image
-                </Button>
-              </label>
-              {imagePreview && (
-                <Box mt={2}>
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    style={{ maxWidth: '100%', maxHeight: '200px' }} 
-                  />
-                </Box>
-              )}
-            </Box>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button 
-            type="submit" 
-            variant="contained" 
+            </Button>
+            {imagePreview && (
+              <Box mt={2} textAlign="center">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ maxWidth: '100%', maxHeight: '200px' }}
+                />
+              </Box>
+            )}
+          </Box>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
             disabled={loading}
           >
             {loading ? <CircularProgress size={24} /> : submitLabel}
           </Button>
-        </DialogActions>
-      </form>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 };

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 // Create axios instance with default config
 const api = axios.create({
@@ -41,6 +41,27 @@ api.interceptors.response.use(
   }
 )
 
+interface Task {
+  _id: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  dueDate?: string;
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TaskData {
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  dueDate?: string;
+  image?: File;
+}
+
 // Task endpoints
 export const getTasks = async () => {
   try {
@@ -52,66 +73,109 @@ export const getTasks = async () => {
   }
 }
 
-export const createTask = async (formData: FormData) => {
+export const createTask = async (formData: FormData): Promise<Task> => {
   try {
-    // Convert FormData to a plain object for non-file fields
-    const taskData = {
-      title: formData.get('title'),
-      description: formData.get('description'),
-      status: formData.get('status'),
-      priority: formData.get('priority'),
-      dueDate: formData.get('dueDate')
-    };
+    // Get the auth token
+    const token = localStorage.getItem('token');
+    console.log('=== API REQUEST DEBUG ===');
+    console.log('Auth token present:', !!token);
+    console.log('Auth token:', token ? token.substring(0, 10) + '...' : 'none');
 
-    // Create a new FormData instance for the request
-    const requestData = new FormData();
-    Object.entries(taskData).forEach(([key, value]) => {
-      if (value) {
-        requestData.append(key, value.toString());
-      }
-    });
-
-    // Add image if it exists
-    const image = formData.get('image');
-    if (image instanceof File) {
-      requestData.append('image', image);
+    if (!token) {
+      throw new Error('No authentication token found. Please log in.');
     }
 
-    const response = await api.post('/tasks', requestData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    // Log the complete request details
+    console.log('=== REQUEST DETAILS ===');
+    console.log('URL:', `${API_URL}/tasks`);
+    console.log('Method:', 'POST');
+    console.log('Headers:', {
+      'Authorization': 'Bearer [REDACTED]'
     });
-    return response;
-  } catch (error: any) {
-    console.error('Error creating task:', error);
-    throw new Error(error.response?.data?.message || 'Failed to create task');
-  }
-}
+    console.log('FormData contents:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}: ${value instanceof File ? value.name : value}`);
+    }
+    console.log('=====================');
 
-export const updateTask = async (id: string, formData: FormData) => {
-  try {
-    const response = await api.put(`/tasks/${id}`, formData, {
+    // Make the request using fetch for better FormData handling
+    const response = await fetch(`${API_URL}/tasks`, {
+      method: 'POST',
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
       },
-    })
-    return response.data
-  } catch (error: any) {
-    console.error('Error updating task:', error)
-    throw new Error(error.response?.data?.message || 'Failed to update task')
-  }
-}
+      body: formData
+    });
 
-export const deleteTask = async (id: string) => {
-  try {
-    const response = await api.delete(`/tasks/${id}`)
-    return response.data
+    // Log response details
+    console.log('=== RESPONSE DETAILS ===');
+    console.log('Status:', response.status);
+    console.log('Status Text:', response.statusText);
+    console.log('Headers:', Object.fromEntries(response.headers.entries()));
+
+    // Try to parse the response body
+    const responseData = await response.json().catch(() => null);
+    console.log('Response Data:', responseData);
+    console.log('=====================');
+
+    if (!response.ok) {
+      const errorMessage = responseData?.error || responseData?.details || `HTTP error! status: ${response.status}`;
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        message: errorMessage,
+        data: responseData
+      });
+      throw new Error(errorMessage);
+    }
+
+    console.log('=== API REQUEST SUCCESS ===');
+    return responseData;
   } catch (error: any) {
-    console.error('Error deleting task:', error)
-    throw new Error(error.response?.data?.message || 'Failed to delete task')
+    console.error('=== API REQUEST ERROR ===');
+    console.error('Error details:', {
+      message: error.message,
+      error: error
+    });
+    throw new Error(error.message || 'Failed to create task. Please check your input and try again.');
   }
-}
+};
+
+export const updateTask = async (id: string, formData: FormData): Promise<Task> => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found. Please log in.');
+    }
+
+    const response = await fetch(`${API_URL}/tasks/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update task');
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Error updating task:', error);
+    throw new Error(error.message || 'Failed to update task');
+  }
+};
+
+export const deleteTask = async (id: string): Promise<void> => {
+  try {
+    await api.delete(`/tasks/${id}`);
+  } catch (error: any) {
+    console.error('Error deleting task:', error);
+    throw new Error(error.response?.data?.message || 'Failed to delete task');
+  }
+};
 
 // Auth endpoints
 export const login = async (email: string, password: string) => {
