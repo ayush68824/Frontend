@@ -20,19 +20,35 @@ const theme = createTheme({
   },
 })
 
+const GOOGLE_CLIENT_ID = '665955875780-4956p9i9u01rqi0rhmqe7nnge992mbpc.apps.googleusercontent.com'
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <GoogleOAuthProvider 
-          clientId="665955875780-4956p9i9u01rqi0rhmqe7nnge992mbpc.apps.googleusercontent.com"
-          onScriptLoadSuccess={() => console.log('Google OAuth script loaded successfully')}
-          onScriptLoadError={() => console.error('Google OAuth script failed to load')}
+          clientId={GOOGLE_CLIENT_ID}
+          onScriptLoadSuccess={() => {
+            console.log('Google OAuth script loaded successfully')
+          }}
+          onScriptLoadError={() => {
+            console.error('Google OAuth script failed to load')
+          }}
         >
           <AuthProvider>
             <App />
-            <ToastContainer position="top-right" autoClose={3000} />
+            <ToastContainer 
+              position="top-right" 
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
           </AuthProvider>
         </GoogleOAuthProvider>
       </LocalizationProvider>

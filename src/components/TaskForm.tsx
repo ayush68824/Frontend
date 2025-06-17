@@ -49,6 +49,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(initialData.image || null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +59,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('title', title.trim());
@@ -73,6 +75,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
       await onSubmit(formData);
       
+      // Reset form
       setTitle('');
       setDescription('');
       setStatus('Not Started');
@@ -81,9 +84,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
       setImage(null);
       setImagePreview(null);
       setError('');
+      
+      // Close dialog
       onClose();
     } catch (error: any) {
       setError(error.message || 'Failed to create task');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -110,12 +117,18 @@ const TaskForm: React.FC<TaskFormProps> = ({
   };
 
   return (
-    <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog 
+      open={true} 
+      onClose={isSubmitting ? undefined : onClose} 
+      maxWidth="sm" 
+      fullWidth
+    >
       <DialogTitle>
         {initialData._id ? 'Edit Task' : 'Create Task'}
         <IconButton
           aria-label="close"
           onClick={onClose}
+          disabled={isSubmitting}
           sx={{ position: 'absolute', right: 8, top: 8 }}
         >
           <CloseIcon />
@@ -131,6 +144,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             required
             error={!!error}
             helperText={error}
+            disabled={isSubmitting}
           />
           <TextField
             fullWidth
@@ -139,6 +153,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             onChange={(e) => setDescription(e.target.value)}
             multiline
             rows={3}
+            disabled={isSubmitting}
           />
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
@@ -146,6 +161,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               label="Status"
+              disabled={isSubmitting}
             >
               <MenuItem value="Not Started">Not Started</MenuItem>
               <MenuItem value="In Progress">In Progress</MenuItem>
@@ -158,6 +174,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
               label="Priority"
+              disabled={isSubmitting}
             >
               <MenuItem value="Low">Low</MenuItem>
               <MenuItem value="Moderate">Moderate</MenuItem>
@@ -169,7 +186,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
               label="Due Date"
               value={dueDate}
               onChange={(newValue) => setDueDate(newValue)}
-              slotProps={{ textField: { fullWidth: true } }}
+              slotProps={{ 
+                textField: { 
+                  fullWidth: true,
+                  disabled: isSubmitting
+                } 
+              }}
             />
           </LocalizationProvider>
           <Box>
@@ -177,6 +199,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               variant="outlined"
               component="label"
               fullWidth
+              disabled={isSubmitting}
             >
               {imagePreview ? 'Change Image' : 'Upload Image'}
               <input
@@ -184,6 +207,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 hidden
                 accept="image/*"
                 onChange={handleImageChange}
+                disabled={isSubmitting}
               />
             </Button>
             {imagePreview && (
@@ -201,9 +225,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
             variant="contained"
             color="primary"
             fullWidth
-            disabled={loading}
+            disabled={isSubmitting}
           >
-            {loading ? <CircularProgress size={24} /> : submitLabel}
+            {isSubmitting ? <CircularProgress size={24} /> : submitLabel}
           </Button>
         </form>
       </DialogContent>
