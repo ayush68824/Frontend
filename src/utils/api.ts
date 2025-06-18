@@ -1,6 +1,7 @@
 import axios from 'axios'
+import.meta.env.VITE_API_URL
 
-export const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 // Create axios instance with default config
 const api = axios.create({
@@ -184,7 +185,6 @@ export const getCurrentUser = async () => {
 
 export const getFullImageUrl = (url?: string | null) => {
   if (!url) return undefined;
-  return url.startsWith('http')
-    ? url
-    : `${API_URL.replace('/api','')}${url}`;
+  const base = API_URL.replace('/api','');
+  return url.startsWith('http') ? url : `${base}${url}`;
 }; 

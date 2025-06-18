@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import axios from 'axios'
-import { getFullImageUrl } from '../utils/api'
-
-const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
+import { getFullImageUrl, API_URL } from '../utils/api'
 
 interface User {
   _id: string
