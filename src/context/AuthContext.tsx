@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import axios from 'axios'
+import { getFullImageUrl } from '../utils/api'
 
 const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
 
@@ -55,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await axios.post(`${API_URL}/auth/login`, { email, password })
       setToken(res.data.token)
-      setUser(res.data.user)
+      setUser({ ...res.data.user, photo: getFullImageUrl(res.data.user.photo) })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
     } catch (e: any) {
@@ -72,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await axios.post(`${API_URL}/auth/register`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
       setToken(res.data.token)
-      setUser(res.data.user)
+      setUser({ ...res.data.user, photo: getFullImageUrl(res.data.user.photo) })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
     } catch (e: any) {
@@ -89,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await axios.post(`${API_URL}/auth/google`, { token: googleToken })
       setToken(res.data.token)
-      setUser(res.data.user)
+      setUser({ ...res.data.user, photo: getFullImageUrl(res.data.user.photo) })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
     } catch (e: any) {
