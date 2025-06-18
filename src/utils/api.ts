@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
+export const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
 
 // Create axios instance with default config
 const api = axios.create({
