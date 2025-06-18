@@ -4,8 +4,7 @@ import { Box, Typography, Paper, Button, TextField, Avatar, IconButton, Divider,
 import { useNavigate } from 'react-router-dom'
 import { PhotoCamera } from '@mui/icons-material'
 import axios from 'axios'
-
-const API_URL = 'https://todo-full-stack-1-9ewe.onrender.com/api'
+import { API_URL } from '../utils/api'
 
 const Settings: React.FC = () => {
   const { user, token, updateUser, logout } = useAuth()
@@ -80,12 +79,13 @@ const Settings: React.FC = () => {
         throw new Error('Invalid response from server')
       }
 
+      // Update the user context with the new data
       updateUser(response.data.user)
       setSuccess('Profile updated successfully')
       setPhoto(null) // Clear the photo state after successful upload
     } catch (err: any) {
       console.error('Profile update error:', err)
-      const errorMessage = err.response?.data?.error || err.response?.data?.details || 'Failed to update profile'
+      const errorMessage = err.response?.data?.error || err.response?.data?.details || err.message || 'Failed to update profile'
       setError(errorMessage)
     } finally {
       setLoading(false)

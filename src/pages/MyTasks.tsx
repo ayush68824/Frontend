@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getTasks, deleteTask } from '../utils/api';
+import { getTasks } from '../utils/api';
 import { Box, Typography, Grid, CircularProgress, Alert, TextField, MenuItem, Select, InputLabel, FormControl, Paper } from '@mui/material';
 import TaskCard from '../components/TaskCard';
 import type { Task } from '../utils/api';
@@ -30,15 +30,6 @@ const MyTasks: React.FC = () => {
       setError(err.message || 'Failed to load tasks');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDeleteTask = async (id: string) => {
-    try {
-      await deleteTask(id);
-      setTasks(tasks.filter(task => task._id !== id));
-    } catch (err) {
-      setError('Failed to delete task');
     }
   };
 
@@ -94,7 +85,7 @@ const MyTasks: React.FC = () => {
                 <TaskCard
                   task={task}
                   onEdit={() => {}}
-                  onDelete={() => handleDeleteTask(task._id)}
+                  onDelete={() => {}}
                 />
               </Grid>
             ))}

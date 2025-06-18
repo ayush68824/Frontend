@@ -54,17 +54,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null)
     try {
       const res = await axios.post(`${API_URL}/auth/login`, { email, password })
-      if (!res.data.token || !res.data.user) {
-        throw new Error('Invalid response from server')
-      }
       setToken(res.data.token)
       setUser(res.data.user)
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
     } catch (e: any) {
-      const errorMessage = e.response?.data?.error || e.response?.data?.details || 'Login failed'
-      setError(errorMessage)
-      throw new Error(errorMessage)
+      setError(e.response?.data?.message || 'Login failed')
+      throw e
     } finally {
       setLoading(false)
     }
@@ -111,14 +107,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('user')
   }
 
-  const updateUser = async (updatedUser: User) => {
-    try {
-      setUser(updatedUser)
-      localStorage.setItem('user', JSON.stringify(updatedUser))
-    } catch (e: any) {
-      console.error('Error updating user in context:', e)
-      throw new Error('Failed to update user information')
-    }
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser)
+    localStorage.setItem('user', JSON.stringify(updatedUser))
   }
 
   return (

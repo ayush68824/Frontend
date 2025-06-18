@@ -13,8 +13,6 @@ import {
   CircularProgress
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { GoogleLogin } from '@react-oauth/google'
-import type { CredentialResponse } from '@react-oauth/google'
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -29,7 +27,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { login, googleSignIn, user } = useAuth()
+  const { login, user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -47,21 +45,6 @@ const Login: React.FC = () => {
       navigate('/dashboard')
     } catch (err) {
       setError('Invalid email or password')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
-    setIsLoading(true)
-    setError('')
-    try {
-      if (credentialResponse.credential) {
-        await googleSignIn(credentialResponse.credential)
-        navigate('/dashboard')
-      }
-    } catch (err) {
-      setError('Google login failed')
     } finally {
       setIsLoading(false)
     }
@@ -114,12 +97,6 @@ const Login: React.FC = () => {
             {isLoading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
-        <Box sx={{ mt: 2, textAlign: 'center' }}>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => setError('Google login failed')}
-          />
-        </Box>
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Link href="/register" variant="body2">
             Don't have an account? Sign up
