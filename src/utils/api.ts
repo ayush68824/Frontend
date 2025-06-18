@@ -180,4 +180,11 @@ export const getCurrentUser = async () => {
     console.error('Get current user error:', error)
     throw error
   }
-} 
+}
+
+export const getFullImageUrl = (url?: string | null) => {
+  if (!url) return undefined;
+  return url.startsWith('http')
+    ? url
+    : `${API_URL.replace('/api','')}${url}`;
+}; 
