@@ -26,6 +26,7 @@ export default defineConfig({
           utils: ['axios', 'date-fns', 'react-toastify']
         },
       },
+      maxParallelFileOps: 20,
     },
   },
   esbuild: {
