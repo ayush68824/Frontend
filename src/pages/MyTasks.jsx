@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { getTasks } from '../utils/api.js';
+import { getTasks, deleteTask } from '../utils/api.js';
 import { Box, Typography, Grid, CircularProgress, Alert, TextField, MenuItem, Select, InputLabel, FormControl, Paper } from '@mui/material';
 import TaskCard from '../components/TaskCard.jsx';
 
@@ -29,6 +29,15 @@ const MyTasks = () => {
       setError(err.message || 'Failed to load tasks');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await deleteTask(taskId);
+      await fetchTasks();
+    } catch (err) {
+      setError(err.message || 'Failed to delete task');
     }
   };
 
@@ -84,7 +93,7 @@ const MyTasks = () => {
                 <TaskCard
                   task={task}
                   onEdit={() => {}}
-                  onDelete={() => {}}
+                  onDelete={() => handleDeleteTask(task._id)}
                 />
               </Grid>
             ))}

@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   const updateUser = (updatedUser) => {
-    setUser(updatedUser)
+    setUser({ ...updatedUser, photo: getFullImageUrl(updatedUser.photo) })
     localStorage.setItem('user', JSON.stringify(updatedUser))
   }
 

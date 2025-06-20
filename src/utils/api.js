@@ -163,7 +163,9 @@ export const getCurrentUser = async () => {
 }
 
 export const getFullImageUrl = (url) => {
-  if (!url) return undefined;
+  if (!url) return '/default-avatar.png'; // fallback image in public folder
   const base = API_URL.replace('/api','');
-  return url.startsWith('http') ? url : `${base}${url}`;
+  const fullUrl = url.startsWith('http') ? url : `${base}${url}`;
+  console.log('getFullImageUrl:', { url, fullUrl });
+  return fullUrl;
 }; 

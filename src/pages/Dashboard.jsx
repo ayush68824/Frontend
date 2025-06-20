@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
-import { getTasks, createTask, updateTask } from '../utils/api.js'
+import { getTasks, createTask, updateTask, deleteTask } from '../utils/api.js'
 import { CircularProgress, Box, Alert, Button, Snackbar, Grid, Typography, Paper } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import TaskForm from '../components/TaskForm.jsx'
@@ -94,6 +94,24 @@ const Dashboard = () => {
     }
   }
 
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await deleteTask(taskId);
+      await fetchTasks();
+      setSnackbar({
+        open: true,
+        message: 'Task deleted successfully',
+        severity: 'success'
+      });
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to delete task',
+        severity: 'error'
+      });
+    }
+  };
+
   if (!user) return null
 
   return (
@@ -130,7 +148,7 @@ const Dashboard = () => {
                 <TaskCard
                   task={task}
                   onEdit={() => handleEditTask(task)}
-                  onDelete={() => {}}
+                  onDelete={() => handleDeleteTask(task._id)}
                 />
               </Grid>
             ))}
